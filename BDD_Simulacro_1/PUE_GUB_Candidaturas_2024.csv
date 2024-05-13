@@ -1,0 +1,52 @@
+﻿ID_ENTIDAD,PARTIDO_CI,CANDIDATURA
+PUEBLA,PAN,Nombre Apellido Apellido
+PUEBLA,PRI,Nombre Apellido Apellido
+PUEBLA,PRD,Nombre Apellido Apellido
+PUEBLA,PT,Nombre Apellido Apellido
+PUEBLA,PVEM,Nombre Apellido Apellido
+PUEBLA,MC,Nombre Apellido Apellido
+PUEBLA,PSI,Nombre Apellido Apellido
+PUEBLA,MOR,Nombre Apellido Apellido
+PUEBLA,NAP,Nombre Apellido Apellido
+PUEBLA,FXMP,Nombre Apellido Apellido
+PUEBLA,MRPP,
+PUEBLA,SEHHP,
+PUEBLA,CI1,
+PUEBLA,CI2,
+PUEBLA,C_PAN_PRI_PRD_PSI,Nombre Apellido Apellido
+PUEBLA,C_PAN_PRI_PRD,Nombre Apellido Apellido
+PUEBLA,C_PAN_PRI_PSI,Nombre Apellido Apellido
+PUEBLA,C_PAN_PRD_PSI,Nombre Apellido Apellido
+PUEBLA,C_PRI_PRD_PSI,Nombre Apellido Apellido
+PUEBLA,C_PAN_PRI,Nombre Apellido Apellido
+PUEBLA,C_PAN_PRD,Nombre Apellido Apellido
+PUEBLA,C_PAN_PSI,Nombre Apellido Apellido
+PUEBLA,C_PRI_PRD,Nombre Apellido Apellido
+PUEBLA,C_PRI_PSI,Nombre Apellido Apellido
+PUEBLA,C_PRD_PSI,Nombre Apellido Apellido
+PUEBLA,C_PT_PVEM_MOR_NAP_FXMP,Nombre Apellido Apellido
+PUEBLA,C_PT_PVEM_MOR_NAP,Nombre Apellido Apellido
+PUEBLA,C_PT_PVEM_MOR_FXMP,Nombre Apellido Apellido
+PUEBLA,C_PT_PVEM_NAP_FXMP,Nombre Apellido Apellido
+PUEBLA,C_PT_MOR_NAP_FXMP,Nombre Apellido Apellido
+PUEBLA,C_PVEM_MOR_NAP_FXMP,Nombre Apellido Apellido
+PUEBLA,C_PT_PVEM_MOR,Nombre Apellido Apellido
+PUEBLA,C_PT_PVEM_NAP,Nombre Apellido Apellido
+PUEBLA,C_PT_PVEM_FXMP,Nombre Apellido Apellido
+PUEBLA,C_PT_MOR_NAP,Nombre Apellido Apellido
+PUEBLA,C_PT_MOR_FXMP,Nombre Apellido Apellido
+PUEBLA,C_PT_NAP_FXMP,Nombre Apellido Apellido
+PUEBLA,C_PVEM_MOR_NAP,Nombre Apellido Apellido
+PUEBLA,C_PVEM_MOR_FXMP,Nombre Apellido Apellido
+PUEBLA,C_PVEM_NAP_FXMP,Nombre Apellido Apellido
+PUEBLA,C_MOR_NAP_FXMP,Nombre Apellido Apellido
+PUEBLA,C_PT_PVEM,Nombre Apellido Apellido
+PUEBLA,C_PT_MOR,Nombre Apellido Apellido
+PUEBLA,C_PT_NAP,Nombre Apellido Apellido
+PUEBLA,C_PT_FXMP,Nombre Apellido Apellido
+PUEBLA,C_PVEM_MOR,Nombre Apellido Apellido
+PUEBLA,C_PVEM_NAP,Nombre Apellido Apellido
+PUEBLA,C_PVEM_FXMP,Nombre Apellido Apellido
+PUEBLA,C_MOR_NAP,Nombre Apellido Apellido
+PUEBLA,C_MOR_FXMP,Nombre Apellido Apellido
+PUEBLA,C_NAP_FXMP,Nombre Apellido Apellido
