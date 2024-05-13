@@ -3,8 +3,9 @@ import pandas as pd
 import plotly.express as px
 import os
 import warnings
+import sys
 
-tipo_eleccion = 'GUB' # 'AYUN' o 'DIP_LOC
+tipo_eleccion = 'AYUN' # 'AYUN' o 'DIP_LOC
 
 #folder_path = 'C:/Users/franz/Desktop/Prueba de funcionalidad/prueba_funcionalidad/BDD_Simulacro_1' # Laptop
 
@@ -146,13 +147,13 @@ titulo_elecciones = {'GUB': 'Gubernatura',
 
 def generar_titulo(tipo):
 
-    primera = "Instituto Electoral del Estado de Puebla - Proceso Electoral 2024\n"
+    primera = "Instituto Electoral del Estado de Puebla - Proceso Electoral 2024 "
 
-    segunda = "(Primer simulacro 12 de mayo del 2024)\n"
+    segunda = "(Primer simulacro realizado el 12 de mayo del 2024) - "
 
     nombre_eleccion = titulo_elecciones.get(tipo, 'Tipo de elección desconocido')
 
-    return primera + nombre_eleccion + segunda
+    return primera + segunda + nombre_eleccion 
 
 def save_csv(df):
     """
@@ -165,6 +166,35 @@ def save_csv(df):
     saved_file (.CSV): archivo CSV"""
 
     saved_file = df.to_csv(f'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/Data_clean/data_clean_{tipo_eleccion}.csv')
+
+def save_output(func):
+    """
+    Decorador que captura la salida de una función y la guarda en un archivo de texto.
+
+    Args:
+        func (function): La función cuya salida será capturada y guardada.
+
+    Returns:
+        function: Función decorada que escribe su salida a un archivo.
+    """
+
+    def wrapper(*args, **kwargs):
+
+        original_stdout = sys.stdout
+
+        with open(f'output_{tipo_eleccion}.txt', 'w') as f:
+
+            sys.stdout = f
+
+            func(*args, **kwargs)
+
+            sys.stdout = original_stdout
+
+        print("Los datos de salida han sido almacenados.")
+
+    return wrapper
+
+print(f"Tipo de elección: {titulo_elecciones.get(tipo_eleccion)}")
 
 csv_file_path = find_csv(folder_path, tipo_eleccion)
 
