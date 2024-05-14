@@ -32,6 +32,3 @@ print(f"La fecha estimada para procesar el 100% de las actas de gubernatura, al 
 print(f"La fecha estimada para procesar el 100% de las actas de diputaciones, al ritmo llevado en el simulacro sería: {hora_estimada_finalizacion_dip}")
 print(f"La fecha estimada para procesar el 100% de las actas de ayuntamientos, al ritmo llevado en el simulacro sería: {hora_estimada_finalizacion_ayun}")
 
-
-
-

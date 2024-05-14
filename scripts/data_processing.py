@@ -5,7 +5,7 @@ import os
 import warnings
 import sys
 
-tipo_eleccion = 'AYUN' # 'AYUN' o 'DIP_LOC
+tipo_eleccion = 'AYUN' # 'GUB', 'AYUN' o 'DIP_LOC, cambiar según la base de datos a analizar
 
 #folder_path = 'C:/Users/franz/Desktop/Prueba de funcionalidad/prueba_funcionalidad/BDD_Simulacro_1' # Laptop
 
@@ -256,7 +256,22 @@ fig_1 = px.bar(group_obs, x = 'OBSERVACIONES', y = 'TIEMPO_PROCESAMIENTO_MINUTOS
 
 fig_1.update_traces(textfont_size = 20)
 
+fig_1.update_layout(
+    title={
+        'text': generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por observación</br>',
+        'font': {'size': 25}  # Aumentar el tamaño del título
+    },
+    legend_title_text='Observaciones',
+    legend=dict(
+        font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
+        title_font_size=25  # Aumentar el tamaño de la fuente del título de la leyenda
+    ),
+    xaxis_title_font_size=18,  # Aumentar tamaño de título del eje X
+    yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
+)
+
 fig_1.show()
+
 
 
 fig_2 = px.bar(group_metodo, x = 'DIGITALIZACION', y = 'TIEMPO_PROCESAMIENTO_MINUTOS',
@@ -269,6 +284,21 @@ fig_2 = px.bar(group_metodo, x = 'DIGITALIZACION', y = 'TIEMPO_PROCESAMIENTO_MIN
 
 fig_2.update_traces(textfont_size = 20)
 
+fig_2.update_layout(
+    title={
+        'text': generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por observación</br>',
+        'font': {'size': 25}  # Aumentar el tamaño del título
+    },
+    legend_title_text='Observaciones',
+    legend=dict(
+        font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
+        title_font_size=25  # Aumentar el tamaño de la fuente del título de la leyenda
+    ),
+    xaxis_title_font_size=18,  # Aumentar tamaño de título del eje X
+    yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
+)
+
+
 fig_2.show()
 
 fig_3 = px.box(data_plot, x = 'TIEMPO_PROCESAMIENTO_MINUTOS',
@@ -276,9 +306,16 @@ fig_3 = px.box(data_plot, x = 'TIEMPO_PROCESAMIENTO_MINUTOS',
                labels = {'TIEMPO_PROCESAMIENTO_MINUTOS': 'Tiempo de procesamiento'},
                color_discrete_sequence=px.colors.qualitative.Prism)
 
-
+fig_3.update_layout(
+    title = {
+        'text': generar_titulo(tipo_eleccion) + '<br>Distribución del tiempo de procesamiento de actas</br>',
+        'font': {'size': 20}
+    },
+    xaxis_title='Tiempo de procesamiento (minutos)',
+    yaxis_title='Frecuencia',
+    xaxis_title_font={'size': 16},  # Aumentar tamaño del título del eje X
+    yaxis_title_font={'size': 16}   # Aumentar tamaño del título del eje Y
+)
 fig_3.show()
-
-print(data_plot['TIEMPO_PROCESAMIENTO_MINUTOS'].sum())
 
 save_csv(data_plot)
