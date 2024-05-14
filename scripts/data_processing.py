@@ -254,7 +254,10 @@ fig_1 = px.bar(group_obs, x = 'OBSERVACIONES', y = 'TIEMPO_PROCESAMIENTO_MINUTOS
              text_auto=True,
              color_discrete_sequence=px.colors.qualitative.Pastel1)
 
+fig_1.update_traces(textfont_size = 20)
+
 fig_1.show()
+
 
 fig_2 = px.bar(group_metodo, x = 'DIGITALIZACION', y = 'TIEMPO_PROCESAMIENTO_MINUTOS',
              title = generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por método de digitalización </br>',
@@ -262,15 +265,20 @@ fig_2 = px.bar(group_metodo, x = 'DIGITALIZACION', y = 'TIEMPO_PROCESAMIENTO_MIN
              color = 'DIGITALIZACION',
              text = 'TIEMPO_PROCESAMIENTO_MINUTOS',
              text_auto=True,
-             color_discrete_sequence=px.colors.qualitative.Pastel)
+             color_discrete_sequence=px.colors.qualitative.Pastel2)
+
+fig_2.update_traces(textfont_size = 20)
 
 fig_2.show()
 
 fig_3 = px.box(data_plot, x = 'TIEMPO_PROCESAMIENTO_MINUTOS',
                title = generar_titulo(tipo_eleccion) + '<br>Distribución del tiempo de procesamiento de actas</br>', 
                labels = {'TIEMPO_PROCESAMIENTO_MINUTOS': 'Tiempo de procesamiento'},
-               color_discrete_sequence=px.colors.qualitative.Pastel1)
+               color_discrete_sequence=px.colors.qualitative.Prism)
+
 
 fig_3.show()
+
+print(data_plot['TIEMPO_PROCESAMIENTO_MINUTOS'].sum())
 
 save_csv(data_plot)

@@ -1,0 +1,4 @@
+Tipo_eleccion,Esperadas,Capturadas,Contabilizadas,Promedio,Mediana,Desviacion_estandar,Minimo,Maximo,Registros_negativos,Fecha_estimada_finalizacion
+Gubernatura,8321,3559,3264,13.42,10.15,11.75,-1.25,46.92,4,2024-05-13 16:51:11
+Diputaciones Locales,8398,4616,4184,13.34,9.96,12.06,-2.73,44.97,8,2024-05-13 16:57:13
+Ayuntamientos,8350,2101,1900,13.68,16.27,11.2,-1.45,40.73,2,2024-05-13 17:33:52

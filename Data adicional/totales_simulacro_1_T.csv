@@ -1,0 +1,11 @@
+Tipo_eleccion,Gubernatura,Diputaciones Locales,Ayuntamientos
+Esperadas,8321,8398,8350
+Capturadas,3559,4616,2101
+Contabilizadas,3264,4184,1900
+Promedio,13.42,13.34,13.68
+Mediana,10.15,9.96,16.27
+Desviacion_estandar,11.75,12.06,11.2
+Minimo,-1.25,-2.73,-1.45
+Maximo,46.92,44.97,40.73
+Registros_negativos,4,8,2
+Fecha_estimada_finalizacion,2024-05-13 16:51:11,2024-05-13 16:57:13,2024-05-13 17:33:52
