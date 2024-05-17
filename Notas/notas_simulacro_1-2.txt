@@ -1,0 +1,18 @@
+Simulacro 1.2
+
+La hora de inicio del simulacro (puesta en ceros de base de datos) fue a las 10:30 hrs.
+
+Aproximadamente 6 hrs según PROISI
+
+Cortes cada 10 min
+
+214 capturistas aquí
+
+No se está actualizando cada 10
+
+
+La variable FECHA_HORA_VERIFICACION es un caso especial, cuando las capturas no coinciden y requieren ser verificadas
+
+De manera "normal", se debe considerar la variable FECHA_HORA_CAPTURA y FECHA_HORA_ACOPIO para calcular el tiempo de procesamiento
+
+Cuántos capturistas serán necesarios para realizar el 100% de actas en 4 horas?

@@ -7,9 +7,9 @@ import sys
 
 tipo_eleccion = 'AYUN' # 'GUB', 'AYUN' o 'DIP_LOC, cambiar según la base de datos a analizar
 
-#folder_path = 'C:/Users/franz/Desktop/Prueba de funcionalidad/prueba_funcionalidad/BDD_Simulacro_1' # Laptop
+folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_1_rep' # Laptop
 
-folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_1'
+#folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_1' # Desktop
 
 warnings.filterwarnings('ignore')
 
@@ -165,7 +165,9 @@ def save_csv(df):
     Returns:
     saved_file (.CSV): archivo CSV"""
 
-    saved_file = df.to_csv(f'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/Data_clean/data_clean_{tipo_eleccion}.csv')
+    #saved_file = df.to_csv(f'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/Data_clean/data_clean_{tipo_eleccion}.csv') # Desktop
+
+    saved_file = df.to_csv(f'C:/Users/franz/Desktop/simulacros_prep/Data_clean/data_clean_{tipo_eleccion}_laptop.csv') # Laptop
 
 def save_output(func):
     """
@@ -244,6 +246,8 @@ group_metodo = data_plot.groupby('DIGITALIZACION', as_index = False)['TIEMPO_PRO
 
 conteo_metodos = data_plot['DIGITALIZACION'].value_counts()
 
+print(f"La cantidad de actas procesadas por método de digitalización es de: \n")
+
 print(conteo_metodos)
 
 fig_1 = px.bar(group_obs, x = 'OBSERVACIONES', y = 'TIEMPO_PROCESAMIENTO_MINUTOS',
@@ -271,8 +275,6 @@ fig_1.update_layout(
 )
 
 fig_1.show()
-
-
 
 fig_2 = px.bar(group_metodo, x = 'DIGITALIZACION', y = 'TIEMPO_PROCESAMIENTO_MINUTOS',
              title = generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por método de digitalización </br>',
@@ -316,6 +318,7 @@ fig_3.update_layout(
     xaxis_title_font={'size': 16},  # Aumentar tamaño del título del eje X
     yaxis_title_font={'size': 16}   # Aumentar tamaño del título del eje Y
 )
+
 fig_3.show()
 
-save_csv(data_plot)
+#save_csv(data_plot)
