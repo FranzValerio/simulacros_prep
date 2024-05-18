@@ -1,0 +1,92 @@
+GUBERNATURA
+17/05/2024 21:00 (UTC-6)
+
+El tiempo de procesamiento promedio, en minutos, fue de: 124.01
+La mediana del tiempo de procesamiento, en minutos, fue de: 136.06
+La desviación estándar del tiempo de procesamiento, en minutos, fue de: 82.32
+El tiempo mínimo de procesamiento, en minutos, fue de: 0.15
+El tiempo máximo de procesamiento, en minutos, fue de: 230.07
+
+
+El tiempo de verificación promedio, en minutos, fue de: 135.88
+La mediana del tiempo de verificación, en minutos, fue de: 140.6
+La desviación estándar del tiempo de verificación, en minutos, fue de: 72.4
+El tiempo mínimo de verificación, en minutos, fue de: 0.38
+El tiempo máximo de verificación, en minutos, fue de: 236.73
+
+
+La última fecha y hora de acopio registrada fue a las 2024-05-17 20:28:02
+None
+
+
+La cantidad de actas procesadas por método de digitalización es de: 
+
+DIGITALIZACION
+ESCANER    7885
+MOVIL       453
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+DIPUTACIONES LOCALES (INCLUYE RESULTADOS DE MAYORÍA RELATIVA Y REPRESENTACIÓN PROPORCIONAL)
+17/05/2024 21:00 (UTC-6)
+
+El tiempo de procesamiento promedio, en minutos, fue de: 127.24
+La mediana del tiempo de procesamiento, en minutos, fue de: 141.07
+La desviación estándar del tiempo de procesamiento, en minutos, fue de: 80.51
+El tiempo mínimo de procesamiento, en minutos, fue de: 0.18
+El tiempo máximo de procesamiento, en minutos, fue de: 228.53
+
+
+El tiempo de verificación promedio, en minutos, fue de: 137.4
+La mediana del tiempo de verificación, en minutos, fue de: 144.05
+La desviación estándar del tiempo de verificación, en minutos, fue de: 71.54
+El tiempo mínimo de verificación, en minutos, fue de: 0.73
+El tiempo máximo de verificación, en minutos, fue de: 234.0
+
+
+La última fecha y hora de acopio registrada fue a las 2024-05-17 20:15:00
+None
+
+
+La cantidad de actas procesadas por método de digitalización es de:
+
+DIGITALIZACION
+ESCANER    7851
+MOVIL       563
+
+-------------------------------------------------------------------------------------------------------------------------
+
+AYUNTAMIENTOS
+17/05/2024 21:00 (UTC-6)
+
+El tiempo de procesamiento promedio, en minutos, fue de: 116.51
+La mediana del tiempo de procesamiento, en minutos, fue de: 120.37
+La desviación estándar del tiempo de procesamiento, en minutos, fue de: 78.93
+El tiempo mínimo de procesamiento, en minutos, fue de: 0.17
+El tiempo máximo de procesamiento, en minutos, fue de: 227.08
+
+
+El tiempo de verificación promedio, en minutos, fue de: 126.97
+La mediana del tiempo de verificación, en minutos, fue de: 126.25
+La desviación estándar del tiempo de verificación, en minutos, fue de: 69.95
+El tiempo mínimo de verificación, en minutos, fue de: 0.4
+El tiempo máximo de verificación, en minutos, fue de: 241.72
+
+La última fecha y hora de acopio registrada fue a las 2024-05-17 20:28:07
+None
+
+
+La cantidad de actas procesadas por método de digitalización es de: 
+
+DIGITALIZACION
+ESCANER    8267
+MOVIL        89
+
+Con la información estadística a fecha de corte de la información: 2024-05-17 21:00:00:
+
+La fecha estimada para procesar el 100% de las actas de gubernatura, al ritmo llevado en el simulacro sería: 2024-05-29 09:32:45
+La fecha estimada para procesar el 100% de las actas de diputaciones, al ritmo llevado en el simulacro sería: 2024-05-29 19:42:47
+La fecha estimada para procesar el 100% de las actas de ayuntamientos, al ritmo llevado en el simulacro sería: 2024-05-28 16:45:27
+
+
+

@@ -1,0 +1,50 @@
+Fecha de información:
+
+GUBERNATURA
+17/05/2024 16:40 (UTC-6)
+
+El tiempo de procesamiento promedio, en minutos, fue de: 100.39
+La mediana del tiempo de procesamiento, en minutos, fue de: 103.52
+La desviación estándar del tiempo de procesamiento, en minutos, fue de: 76.85
+El tiempo mínimo de procesamiento, en minutos, fue de: 0.15
+El tiempo máximo de procesamiento, en minutos, fue de: 216.52
+La cantidad de actas procesadas por método de digitalización es de: 
+
+DIGITALIZACION
+ESCANER    4663
+-          3341
+MOVIL       334
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+DIPUTACIONES LOCALES (INCLUYE RESULTADOS DE MAYORÍA RELATIVA Y REPRESENTACIÓN PROPORCIONAL)
+17/05/2024 16:40 (UTC-6)
+
+El tiempo de procesamiento promedio, en minutos, fue de: 97.46
+La mediana del tiempo de procesamiento, en minutos, fue de: 103.48
+La desviación estándar del tiempo de procesamiento, en minutos, fue de: 72.8
+El tiempo mínimo de procesamiento, en minutos, fue de: 0.18
+El tiempo máximo de procesamiento, en minutos, fue de: 218.4
+La cantidad de actas procesadas por método de digitalización es de: 
+
+DIGITALIZACION
+-          3976
+ESCANER    3948
+MOVIL       490
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+AYUNTAMIENTOS
+17/05/2024 16:40 (UTC-6)
+
+El tiempo de procesamiento promedio, en minutos, fue de: 101.61
+La mediana del tiempo de procesamiento, en minutos, fue de: 105.44
+La desviación estándar del tiempo de procesamiento, en minutos, fue de: 71.65
+El tiempo mínimo de procesamiento, en minutos, fue de: 0.25
+El tiempo máximo de procesamiento, en minutos, fue de: 215.8
+La cantidad de actas procesadas por método de digitalización es de: 
+
+DIGITALIZACION
+-          4730
+ESCANER    3605
+MOVIL        21

@@ -16,3 +16,7 @@ La variable FECHA_HORA_VERIFICACION es un caso especial, cuando las capturas no 
 De manera "normal", se debe considerar la variable FECHA_HORA_CAPTURA y FECHA_HORA_ACOPIO para calcular el tiempo de procesamiento
 
 Cuántos capturistas serán necesarios para realizar el 100% de actas en 4 horas?
+
+Si calculo el máximo de la columna FECHA_HORA_ACOPIO obtengo la hora en que se dejaron de digitalizar
+
+Si obtengo el promedio de procesamiento de la verificacion, se obtiene el promedio temporal de la cola de verificacion

@@ -4,12 +4,13 @@ import plotly.express as px
 import os
 import warnings
 import sys
+import plotly.graph_objects as go
 
 tipo_eleccion = 'AYUN' # 'GUB', 'AYUN' o 'DIP_LOC, cambiar según la base de datos a analizar
 
-folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_1_rep' # Laptop
+# folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_1_rep' # Laptop
 
-#folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_1' # Desktop
+folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_1_rep' # Desktop
 
 warnings.filterwarnings('ignore')
 
@@ -113,29 +114,29 @@ def check_negs(df, cols):
 
         print(f"La cantidad de registros con tiempos de procesamiento negativos es de: {cantidad_negativos} registros.")
 
-        print("Los registros negativos son los siguientes:")
+        if cantidad_negativos > 0:
 
-        registros_negativos = np.where(df[cols] < 0)[0]
+            print("Los registros negativos son los siguientes:")
 
-        print(df.iloc[registros_negativos])
+            registros_negativos = np.where(df[cols] < 0)[0]
 
-    if cantidad_negativos > 0:
+            print(df.iloc[registros_negativos])
 
-        respuesta = input("¿Deseas eliminar los registros negativos? (Y/N): ")
+            respuesta = input("¿Deseas eliminar los registros negativos? (Y/N): ")
 
-        if respuesta.lower() in ['y', 'Y']:
+            if respuesta.lower() in ['y', 'Y']:
 
-            df = df[df[cols] >= 0]
+                df = df[df[cols] >= 0]
 
-            print("Registros negativos eliminados.")
+                print("Registros negativos eliminados.")
+
+            else:
+
+                print("Los registros negativos no fueron eliminados. Requiere análisis más profundo.")
 
         else:
 
-            print("Los registros negativos no fueron eliminados. Requiere análisis más profundo.")
-
-    else:
-
-        print(f"La columna {cols} no existe en el dataframe.")
+            print(f"La columna {cols} no existe en el dataframe.")
 
         return df
     
@@ -147,9 +148,9 @@ titulo_elecciones = {'GUB': 'Gubernatura',
 
 def generar_titulo(tipo):
 
-    primera = "Instituto Electoral del Estado de Puebla - Proceso Electoral 2024 "
+    primera = "Instituto Electoral del Estado de Puebla - Proceso Electoral 2023-2024 "
 
-    segunda = "(Primer simulacro realizado el 12 de mayo del 2024) - "
+    segunda = "(Simulacro adicional realizado el 17 de mayo del 2024) - "
 
     nombre_eleccion = titulo_elecciones.get(tipo, 'Tipo de elección desconocido')
 
@@ -165,9 +166,9 @@ def save_csv(df):
     Returns:
     saved_file (.CSV): archivo CSV"""
 
-    #saved_file = df.to_csv(f'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/Data_clean/data_clean_{tipo_eleccion}.csv') # Desktop
+    saved_file = df.to_csv(f'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/Data_clean/data_clean_{tipo_eleccion}.csv') # Desktop
 
-    saved_file = df.to_csv(f'C:/Users/franz/Desktop/simulacros_prep/Data_clean/data_clean_{tipo_eleccion}_laptop.csv') # Laptop
+    # saved_file = df.to_csv(f'C:/Users/franz/Desktop/simulacros_prep/Data_clean/data_clean_{tipo_eleccion}_laptop.csv') # Laptop
 
 def save_output(func):
     """
@@ -196,11 +197,129 @@ def save_output(func):
 
     return wrapper
 
+def digit_stop(df):
+
+    last_time = df['FECHA_HORA_ACOPIO'].max()
+
+    print(f"La última fecha y hora de acopio registrada fue a las {last_time}")
+
+def acopio_serie_tiempo(df):
+
+    df['Fecha_Acopio'] = df['FECHA_HORA_ACOPIO']
+
+    df.set_index('Fecha_Acopio', inplace = True)
+
+    df_resampled = df.resample('20T').count()
+
+    line_color = 'blue'
+    hist_color = '#EF553B'
+
+    fig_line = go.Figure()
+
+    fig_line.add_trace(go.Scatter(x=df_resampled.index, y = df_resampled.CODIGO_INTEGRIDAD,
+                       mode = 'lines+markers', name='Actas Acopiadas',line = dict(color = line_color)))
+    fig_line.update_layout(
+        title = f"{generar_titulo(tipo_eleccion)}<br>Evolución temporal del Acopio de Actas de Escrutinio y Cómputo</br>",
+        xaxis_title = 'Fecha y Hora',
+        yaxis_title = 'Número de Actas Procesadas',
+        template ='plotly_white'
+    )
+
+    fig_line.show()
+
+    fig_hist = px.histogram(df.reset_index(), x = 'Fecha_Acopio', 
+                            nbins = 20, 
+                            title = f"{generar_titulo(tipo_eleccion)}<br>Histograma del Flujo de Acopio de Actas de Escrutinio y Cómputo</br>",
+                            color_discrete_sequence=[hist_color])
+    
+    fig_hist.update_layout(
+        xaxis_title='Fecha y Hora de Acopio',
+        yaxis_title='Número de Actas',
+        template='plotly_white'
+    )
+    fig_hist.show()
+
+def captura_serie_tiempo(df):
+
+    df['Fecha_Captura'] = df['FECHA_HORA_CAPTURA']
+
+    df.set_index('Fecha_Captura', inplace = True)
+
+    df_resampled = df.resample('20T').count()
+
+    line_color = '#B82E2E'
+    hist_color = '#990099'
+
+    fig_line = go.Figure()
+
+    fig_line.add_trace(go.Scatter(x=df_resampled.index, y = df_resampled.CODIGO_INTEGRIDAD,
+                       mode = 'lines+markers', name='Actas Capturadas', line = dict(color = line_color)))
+    fig_line.update_layout(
+        title = f"{generar_titulo(tipo_eleccion)}<br>Evolución temporal de la Captura de Actas de Escrutinio y Cómputo</br>",
+        xaxis_title = 'Fecha y Hora',
+        yaxis_title = 'Número de Actas Capturadas',
+        template ='plotly_white'
+    )
+
+    fig_line.show()
+
+    fig_hist = px.histogram(df.reset_index(), x = 'Fecha_Captura', 
+                            nbins = 20, 
+                            title = f"{generar_titulo(tipo_eleccion)}<br>Histograma del Flujo de Captura de Actas de Escrutinio y Cómputo</br>",
+                            color_discrete_sequence=[hist_color])
+    
+    fig_hist.update_layout(
+        xaxis_title='Fecha y Hora de Captura',
+        yaxis_title='Número de Actas',
+        template='plotly_white'
+    )
+    fig_hist.show()
+
+def verificacion_serie_tiempo(df):
+
+    df['Fecha_Verificacion'] = df['FECHA_HORA_VERIFICACION']
+
+    df.set_index('Fecha_Verificacion', inplace = True)
+
+    df_resampled = df.resample('20T').count()
+
+    line_color = '#FF7F0E'
+    hist_color = '#00CC96'
+
+    fig_line = go.Figure()
+
+    fig_line.add_trace(go.Scatter(x=df_resampled.index, y = df_resampled.CODIGO_INTEGRIDAD,
+                       mode = 'lines+markers', name='Actas Verificadas', line = dict(color = line_color)))
+    fig_line.update_layout(
+        title = f"{generar_titulo(tipo_eleccion)}<br>Evolución temporal de la Verificación de Actas de Escrutinio y Cómputo</br>",
+        xaxis_title = 'Fecha y Hora',
+        yaxis_title = 'Número de Actas Verificadas',
+        template ='plotly_white'
+    )
+
+    fig_line.show()
+
+    fig_hist = px.histogram(df.reset_index(), x = 'Fecha_Verificacion', 
+                            nbins = 20, 
+                            title = f"{generar_titulo(tipo_eleccion)}<br>Histograma del Flujo de Verificacion de Actas de Escrutinio y Cómputo</br>",
+                            color_discrete_sequence=[hist_color])
+    
+    fig_hist.update_layout(
+        xaxis_title='Fecha y Hora de Verificacion',
+        yaxis_title='Número de Actas',
+        template='plotly_white'
+    )
+    fig_hist.show()
+
+
 print(f"Tipo de elección: {titulo_elecciones.get(tipo_eleccion)}")
 
 csv_file_path = find_csv(folder_path, tipo_eleccion)
 
 df = load_csv(csv_file_path)
+
+print()
+print()
 
 if df is not None:
 
@@ -208,9 +327,15 @@ if df is not None:
 
 data_no_nan = check_nans(df)
 
+print()
+print()
+
 print(f"Número de datos nulos en FECHA_HORA_ACOPIO: {data_no_nan.FECHA_HORA_ACOPIO.isna().sum()}")
 print(f"Número de datos nulos en FECHA_HORA_CAPTURA: {data_no_nan.FECHA_HORA_CAPTURA.isna().sum()}")
 print(f"Número de datos nulos en FECHA_HORA_VERIFICACION: {data_no_nan.FECHA_HORA_VERIFICACION.isna().sum()}")
+
+print()
+print()
 
 print("Tipos de datos antes de la conversión: ")
 print(data_no_nan[['FECHA_HORA_ACOPIO', 'FECHA_HORA_CAPTURA', 'FECHA_HORA_VERIFICACION']].dtypes)
@@ -219,8 +344,13 @@ data_no_nan['FECHA_HORA_ACOPIO'] = pd.to_datetime(data_no_nan['FECHA_HORA_ACOPIO
 data_no_nan['FECHA_HORA_CAPTURA'] = pd.to_datetime(data_no_nan['FECHA_HORA_CAPTURA'], format = '%d/%m/%Y %H:%M:%S', errors='coerce')
 data_no_nan['FECHA_HORA_VERIFICACION'] = pd.to_datetime(data_no_nan['FECHA_HORA_VERIFICACION'], format = '%d/%m/%Y %H:%M:%S', errors='coerce')
 
+print()
+print()
+
 print("Tipos de datos después de la conversión: ")
 print(data_no_nan[['FECHA_HORA_ACOPIO', 'FECHA_HORA_CAPTURA', 'FECHA_HORA_VERIFICACION']].dtypes)
+
+# Tiempo de procesamiento con solo capturas
 
 data_no_nan['TIEMPO_PROCESAMIENTO'] = data_no_nan['FECHA_HORA_CAPTURA'] - data_no_nan['FECHA_HORA_ACOPIO']
 
@@ -228,17 +358,60 @@ data_no_nan['TIEMPO_PROCESAMIENTO_MINUTOS'] = data_no_nan['TIEMPO_PROCESAMIENTO'
 
 data_no_nan['TIEMPO_PROCESAMIENTO_MINUTOS'] = data_no_nan['TIEMPO_PROCESAMIENTO_MINUTOS'].round(2)
 
-print(data_no_nan[['FECHA_HORA_ACOPIO', 'FECHA_HORA_CAPTURA', 'TIEMPO_PROCESAMIENTO', 'TIEMPO_PROCESAMIENTO_MINUTOS']].head())
+# Tiempo de procesamiento para actas con verificacion
+
+data_no_nan['TIEMPO_PROCESAMIENTO_VERIFICACION'] = data_no_nan['FECHA_HORA_VERIFICACION'] - data_no_nan['FECHA_HORA_ACOPIO']
+
+data_no_nan['TIEMPO_PROCESAMIENTO_VERIFICACION_MINUTOS'] = data_no_nan['TIEMPO_PROCESAMIENTO_VERIFICACION'].dt.total_seconds()/60
+
+data_no_nan['TIEMPO_PROCESAMIENTO_VERIFICACION_MINUTOS'] = data_no_nan['TIEMPO_PROCESAMIENTO_VERIFICACION_MINUTOS'].round(2)
+
+print()
+print()
+
+print(data_no_nan[['FECHA_HORA_ACOPIO', 'FECHA_HORA_CAPTURA', 'TIEMPO_PROCESAMIENTO_MINUTOS','TIEMPO_PROCESAMIENTO_VERIFICACION_MINUTOS' ]].head())
+
+print()
+print()
 
 data_plot = change_names(data_no_nan)
 
 data_plot = check_negs(data_plot, 'TIEMPO_PROCESAMIENTO_MINUTOS')
+
+print()
+print()
 
 print(f"El tiempo de procesamiento promedio, en minutos, fue de: {data_plot['TIEMPO_PROCESAMIENTO_MINUTOS'].mean().round(2)}")
 print(f"La mediana del tiempo de procesamiento, en minutos, fue de: {data_plot['TIEMPO_PROCESAMIENTO_MINUTOS'].median().round(2)}")
 print(f"La desviación estándar del tiempo de procesamiento, en minutos, fue de: {data_plot['TIEMPO_PROCESAMIENTO_MINUTOS'].std().round(2)}")
 print(f"El tiempo mínimo de procesamiento, en minutos, fue de: {data_plot['TIEMPO_PROCESAMIENTO_MINUTOS'].min().round(2)}")
 print(f"El tiempo máximo de procesamiento, en minutos, fue de: {data_plot['TIEMPO_PROCESAMIENTO_MINUTOS'].max().round(2)}")
+
+print()
+print()
+
+
+print(f"El tiempo de verificación promedio, en minutos, fue de: {data_plot['TIEMPO_PROCESAMIENTO_VERIFICACION_MINUTOS'].mean().round(2)}")
+print(f"La mediana del tiempo de verificación, en minutos, fue de: {data_plot['TIEMPO_PROCESAMIENTO_VERIFICACION_MINUTOS'].median().round(2)}")
+print(f"La desviación estándar del tiempo de verificación, en minutos, fue de: {data_plot['TIEMPO_PROCESAMIENTO_VERIFICACION_MINUTOS'].std().round(2)}")
+print(f"El tiempo mínimo de verificación, en minutos, fue de: {data_plot['TIEMPO_PROCESAMIENTO_VERIFICACION_MINUTOS'].min().round(2)}")
+print(f"El tiempo máximo de verificación, en minutos, fue de: {data_plot['TIEMPO_PROCESAMIENTO_VERIFICACION_MINUTOS'].max().round(2)}")
+
+print()
+print()
+
+print(digit_stop(data_plot))
+
+print()
+print()
+
+acopio_serie_tiempo(data_plot)
+
+
+captura_serie_tiempo(data_plot)
+
+verificacion_serie_tiempo(data_plot)
+
 
 group_obs = data_plot.groupby('OBSERVACIONES', as_index=False)['TIEMPO_PROCESAMIENTO_MINUTOS'].mean().round(2)
 
