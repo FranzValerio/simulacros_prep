@@ -6,13 +6,13 @@ import warnings
 import sys
 import plotly.graph_objects as go
 
-tipo_eleccion = 'DIP_LOC' # 'GUB', 'AYUN' o 'DIP_LOC, cambiar según la base de datos a analizar
+tipo_eleccion = 'AYUN' # 'GUB', 'AYUN' o 'DIP_LOC, cambiar según la base de datos a analizar
 
-inicio_intervalo = pd.to_datetime('2024-05-17 10:30')
+inicio_intervalo = pd.to_datetime('2024-05-19 10:30')
 
-fin_intervalo = pd.to_datetime('2024-05-17 21:00')
+fin_intervalo = pd.to_datetime('2024-05-19 14:30')
 
-folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_1_rep' # Laptop
+folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_2' # Laptop
 
 #folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_1_rep' # Desktop
 
@@ -349,8 +349,6 @@ def tiempos_finales(df, tipo_eleccion):
     print(f"El momento en el que se alancazó el 100% de actas capturadas fue el: {momento_100}")
 
     print(f"El porcentaje actual de actas capturadas es: {porcentaje_real:.2f}%")
-
-
 
 print(f"Tipo de elección: {titulo_elecciones.get(tipo_eleccion)}")
 

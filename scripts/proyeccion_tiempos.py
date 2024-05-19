@@ -10,7 +10,7 @@ diff_tiempo = fecha_corte - hora_inicio # Tiempo entre inicio y corte de la inf
 
 total_actas_gub = 8338
 total_actas_dip = 8414
-total_actas_ayun = 8356
+total_actas_ayun = 8356 
 
 tiempo_procesamiento_disponible = diff_tiempo.total_seconds() / 60 # tiempo que ha pasado desde el inicio de la captura a la fecha de corte
 
