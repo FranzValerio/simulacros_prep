@@ -1,9 +1,9 @@
 import numpy as np
 from datetime import datetime, timedelta
 
-hora_inicio = datetime(2024, 5, 17, 10, 30)
+hora_inicio = datetime(2024, 5, 19, 10, 30)
 
-fecha_corte = datetime(2024, 5, 17, 21, 00) # modificar de acuerdo a la BDD
+fecha_corte = datetime(2024, 5, 19, 12, 10) # modificar de acuerdo a la BDD
 
 diff_tiempo = fecha_corte - hora_inicio # Tiempo entre inicio y corte de la inf
 
@@ -16,13 +16,13 @@ tiempo_procesamiento_disponible = diff_tiempo.total_seconds() / 60 # tiempo que 
 
 # El 596 correspondía al tiempo que había pasado entre las 10:00 am y las 19:43 12/05
 
-actas_capturadas_gub = 8338
-actas_capturadas_dip = 8414
-actas_capturadas_ayun = 8356
+actas_capturadas_gub = 950
+actas_capturadas_dip = 1470
+actas_capturadas_ayun = 2479
 
-tiempo_prom_acta_gub = 124.01
-tiempo_prom_acta_dip = 127.24
-tiempo_prom_acta_ayun = 116.51
+tiempo_prom_acta_gub = 25.17
+tiempo_prom_acta_dip = 21.8
+tiempo_prom_acta_ayun = 21.76
 
 tiempo_proyectado_total_gub = tiempo_prom_acta_gub * total_actas_gub
 tiempo_proyectado_total_dip = tiempo_prom_acta_dip * total_actas_dip

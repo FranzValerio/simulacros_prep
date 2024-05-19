@@ -6,11 +6,15 @@ import warnings
 import sys
 import plotly.graph_objects as go
 
-tipo_eleccion = 'AYUN' # 'GUB', 'AYUN' o 'DIP_LOC, cambiar según la base de datos a analizar
+tipo_eleccion = 'DIP_LOC' # 'GUB', 'AYUN' o 'DIP_LOC, cambiar según la base de datos a analizar
 
-# folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_1_rep' # Laptop
+inicio_intervalo = pd.to_datetime('2024-05-17 10:30')
 
-folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_1_rep' # Desktop
+fin_intervalo = pd.to_datetime('2024-05-17 21:00')
+
+folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_1_rep' # Laptop
+
+#folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_1_rep' # Desktop
 
 warnings.filterwarnings('ignore')
 
@@ -150,7 +154,7 @@ def generar_titulo(tipo):
 
     primera = "Instituto Electoral del Estado de Puebla - Proceso Electoral 2023-2024 "
 
-    segunda = "(Simulacro adicional realizado el 17 de mayo del 2024) - "
+    segunda = "(Segundo simulacro PREP 19 de mayo del 2024) - "
 
     nombre_eleccion = titulo_elecciones.get(tipo, 'Tipo de elección desconocido')
 
@@ -169,33 +173,6 @@ def save_csv(df):
     saved_file = df.to_csv(f'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/Data_clean/data_clean_{tipo_eleccion}.csv') # Desktop
 
     # saved_file = df.to_csv(f'C:/Users/franz/Desktop/simulacros_prep/Data_clean/data_clean_{tipo_eleccion}_laptop.csv') # Laptop
-
-def save_output(func):
-    """
-    Decorador que captura la salida de una función y la guarda en un archivo de texto.
-
-    Args:
-        func (function): La función cuya salida será capturada y guardada.
-
-    Returns:
-        function: Función decorada que escribe su salida a un archivo.
-    """
-
-    def wrapper(*args, **kwargs):
-
-        original_stdout = sys.stdout
-
-        with open(f'output_{tipo_eleccion}.txt', 'w') as f:
-
-            sys.stdout = f
-
-            func(*args, **kwargs)
-
-            sys.stdout = original_stdout
-
-        print("Los datos de salida han sido almacenados.")
-
-    return wrapper
 
 def digit_stop(df):
 
@@ -311,6 +288,69 @@ def verificacion_serie_tiempo(df):
     )
     fig_hist.show()
 
+def analisis_serie_capturas(df, start, stop):
+
+    capturas_intervalo = df[(df['FECHA_HORA_CAPTURA'] >= start) & (df['FECHA_HORA_CAPTURA'] <= stop)]
+
+    num_capturas_intervalo = capturas_intervalo.shape[0]
+
+    print(f"El número de capturas en el intervalo de {start} a {stop} es de: {num_capturas_intervalo}")
+
+    capturas_intervalo['Tiempo_Acopio_Captura'] = (capturas_intervalo['FECHA_HORA_CAPTURA'] - capturas_intervalo['FECHA_HORA_ACOPIO']).dt.total_seconds()
+
+    capturas_intervalo['Tiempo_Captura_Verificacion'] = (capturas_intervalo['FECHA_HORA_VERIFICACION'] - capturas_intervalo['FECHA_HORA_CAPTURA']).dt.total_seconds()
+
+    print()
+    print()
+
+    print(capturas_intervalo[['Tiempo_Acopio_Captura', 'Tiempo_Captura_Verificacion']].describe())
+
+    df['HORA_CAPTURA'] = df['FECHA_HORA_CAPTURA'].dt.floor('T')
+
+    conteo_capturas = df.groupby('HORA_CAPTURA').size()
+
+    fig = px.line(x = conteo_capturas.index, y = conteo_capturas.values,
+                  labels = {'x': 'Hora', 'y': 'Número de capturas'},
+                            title = f"{generar_titulo(tipo_eleccion)}<br>Captura de Actas a lo largo del día</br>")
+    
+    fig.add_vline(x = start, line = dict(color = 'green', dash = 'dash'), name ='Inicio del intervalo')
+    fig.add_vline(x = stop, line = dict(color = 'red', dash = 'dash'), name = 'Fin del intervalo')
+
+    fig.show()
+
+def tiempos_finales(df, tipo_eleccion):
+
+    df['HORA_CAPTURA'] = df['FECHA_HORA_CAPTURA'].dt.floor('T')
+
+    conteo_capturas = df.groupby('HORA_CAPTURA').size().cumsum()
+
+    totales = {'GUB': 8338,
+               'DIP_LOC': 8414,
+               'AYUN': 8356}
+    
+    porcentaje_captura = conteo_capturas/totales.get(tipo_eleccion) * 100
+
+    def momento_captura_completa(porcentaje_captura):
+
+        completo = porcentaje_captura[porcentaje_captura == 100]
+
+        if not completo.empty:
+
+            return completo.index[0]
+    
+        else:
+
+            return "No se ha alcanzado el 100% de la captura de las actas"
+    
+    momento_100 = momento_captura_completa(porcentaje_captura)
+
+    porcentaje_real = porcentaje_captura.iloc[-1]
+
+    print(f"El momento en el que se alancazó el 100% de actas capturadas fue el: {momento_100}")
+
+    print(f"El porcentaje actual de actas capturadas es: {porcentaje_real:.2f}%")
+
+
 
 print(f"Tipo de elección: {titulo_elecciones.get(tipo_eleccion)}")
 
@@ -407,7 +447,6 @@ print()
 
 acopio_serie_tiempo(data_plot)
 
-
 captura_serie_tiempo(data_plot)
 
 verificacion_serie_tiempo(data_plot)
@@ -436,12 +475,12 @@ fig_1.update_traces(textfont_size = 20)
 fig_1.update_layout(
     title={
         'text': generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por observación</br>',
-        'font': {'size': 25}  # Aumentar el tamaño del título
+        'font': {'size': 20}  # Aumentar el tamaño del título
     },
     legend_title_text='Observaciones',
     legend=dict(
         font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
-        title_font_size=25  # Aumentar el tamaño de la fuente del título de la leyenda
+        title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
     ),
     xaxis_title_font_size=18,  # Aumentar tamaño de título del eje X
     yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
@@ -462,12 +501,12 @@ fig_2.update_traces(textfont_size = 20)
 fig_2.update_layout(
     title={
         'text': generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por observación</br>',
-        'font': {'size': 25}  # Aumentar el tamaño del título
+        'font': {'size': 20}  # Aumentar el tamaño del título
     },
     legend_title_text='Observaciones',
     legend=dict(
         font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
-        title_font_size=25  # Aumentar el tamaño de la fuente del título de la leyenda
+        title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
     ),
     xaxis_title_font_size=18,  # Aumentar tamaño de título del eje X
     yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
@@ -494,42 +533,13 @@ fig_3.update_layout(
 
 fig_3.show()
 
+print()
+print()
+
+analisis_serie_capturas(data_plot, start = inicio_intervalo, stop = fin_intervalo)
+
+print()
+print()
+tiempos_finales(data_plot, tipo_eleccion)
+
 #save_csv(data_plot)
-
-# Análisis de las capturas en la última parte del simulacro
-# Filtrar los datos para el intervalo de 20:20 a 20:40
-inicio_intervalo = pd.to_datetime('2024-05-17 20:20')
-fin_intervalo = pd.to_datetime('2024-05-17 20:40')
-
-capturas_intervalo = data_plot[(data_plot['FECHA_HORA_VERIFICACION'] >= inicio_intervalo) & (data_plot['FECHA_HORA_VERIFICACION'] <= fin_intervalo)]
-
-# Verificar el número de capturas en el intervalo
-num_capturas_intervalo = capturas_intervalo.shape[0]
-print(f'Número de capturas en el intervalo de 20:20 a 20:40: {num_capturas_intervalo}')
-
-# Análisis de tiempos
-capturas_intervalo['tiempo_acopio_captura'] = (capturas_intervalo['FECHA_HORA_CAPTURA'] - capturas_intervalo['FECHA_HORA_ACOPIO']).dt.total_seconds()
-capturas_intervalo['tiempo_captura_verificacion'] = (capturas_intervalo['FECHA_HORA_VERIFICACION'] - capturas_intervalo['FECHA_HORA_CAPTURA']).dt.total_seconds()
-
-# Resumen estadístico de los tiempos
-print(capturas_intervalo[['tiempo_acopio_captura', 'tiempo_captura_verificacion']].describe())
-
-# Gráfico del número de actas procesadas a lo largo del día (requiere matplotlib)
-import matplotlib.pyplot as plt
-
-# Crear una columna de hora
-data_plot['HORA_CAPTURA'] = data_plot['FECHA_HORA_CAPTURA'].dt.floor('T')
-
-# Contar el número de capturas por minuto
-conteo_capturas = data_plot.groupby('HORA_CAPTURA').size()
-
-# Gráfico
-plt.figure(figsize=(10, 5))
-plt.plot(conteo_capturas.index, conteo_capturas.values, label='Número de Capturas')
-plt.axvline(x=inicio_intervalo, color='r', linestyle='--', label='Inicio Intervalo')
-plt.axvline(x=fin_intervalo, color='g', linestyle='--', label='Fin Intervalo')
-plt.xlabel('Hora')
-plt.ylabel('Número de Capturas')
-plt.title('Capturas de Actas a lo largo del Día')
-plt.legend()
-plt.show()

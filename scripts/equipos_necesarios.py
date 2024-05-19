@@ -9,7 +9,7 @@ actas_diputaciones = 8414 * 0.9
 actas_ayuntamientos = 8356 * 0.9
 
 # Tiempo disponible para procesar las actas en minutos (desde las 20:00 horas del 2 de junio hasta las 23:59 horas del 3 de junio)
-tiempo_disponible = (23 * 60 + 59) + 12 * 60
+tiempo_disponible = (23 * 60 + 59) + 4 * 60
 
 # Calculando el tiempo total requerido para procesar todas las actas en cada categoría
 total_minutos_gubernatura = actas_gubernatura * tiempo_gubernatura 
@@ -21,7 +21,7 @@ tiempo_total_requerido = total_minutos_gubernatura + total_minutos_diputaciones 
 
 # Calculando cuántos equipos de captura son necesarios para cumplir con el intervalo de tiempo
 equipos_necesarios = tiempo_total_requerido / tiempo_disponible
-print(equipos_necesarios)
+print(f"El número mínimo de equipos requeridos para procesar el 90% de las actas es de: {int(equipos_necesarios)}")
 
 
 # # Datos proporcionados
