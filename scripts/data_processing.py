@@ -495,3 +495,41 @@ fig_3.update_layout(
 fig_3.show()
 
 #save_csv(data_plot)
+
+# Análisis de las capturas en la última parte del simulacro
+# Filtrar los datos para el intervalo de 20:20 a 20:40
+inicio_intervalo = pd.to_datetime('2024-05-17 20:20')
+fin_intervalo = pd.to_datetime('2024-05-17 20:40')
+
+capturas_intervalo = data_plot[(data_plot['FECHA_HORA_VERIFICACION'] >= inicio_intervalo) & (data_plot['FECHA_HORA_VERIFICACION'] <= fin_intervalo)]
+
+# Verificar el número de capturas en el intervalo
+num_capturas_intervalo = capturas_intervalo.shape[0]
+print(f'Número de capturas en el intervalo de 20:20 a 20:40: {num_capturas_intervalo}')
+
+# Análisis de tiempos
+capturas_intervalo['tiempo_acopio_captura'] = (capturas_intervalo['FECHA_HORA_CAPTURA'] - capturas_intervalo['FECHA_HORA_ACOPIO']).dt.total_seconds()
+capturas_intervalo['tiempo_captura_verificacion'] = (capturas_intervalo['FECHA_HORA_VERIFICACION'] - capturas_intervalo['FECHA_HORA_CAPTURA']).dt.total_seconds()
+
+# Resumen estadístico de los tiempos
+print(capturas_intervalo[['tiempo_acopio_captura', 'tiempo_captura_verificacion']].describe())
+
+# Gráfico del número de actas procesadas a lo largo del día (requiere matplotlib)
+import matplotlib.pyplot as plt
+
+# Crear una columna de hora
+data_plot['HORA_CAPTURA'] = data_plot['FECHA_HORA_CAPTURA'].dt.floor('T')
+
+# Contar el número de capturas por minuto
+conteo_capturas = data_plot.groupby('HORA_CAPTURA').size()
+
+# Gráfico
+plt.figure(figsize=(10, 5))
+plt.plot(conteo_capturas.index, conteo_capturas.values, label='Número de Capturas')
+plt.axvline(x=inicio_intervalo, color='r', linestyle='--', label='Inicio Intervalo')
+plt.axvline(x=fin_intervalo, color='g', linestyle='--', label='Fin Intervalo')
+plt.xlabel('Hora')
+plt.ylabel('Número de Capturas')
+plt.title('Capturas de Actas a lo largo del Día')
+plt.legend()
+plt.show()
