@@ -1,7 +1,7 @@
 # Definiendo los tiempos promedio de procesamiento en minutos
 tiempo_gubernatura = 124.01
 tiempo_diputaciones = 127.24
-tiempo_ayuntamientos = 116.51
+tiempo_ayuntamientos = 120.37
 
 # Número total de actas por categoría
 actas_gubernatura = 8338 * 0.9
@@ -9,7 +9,7 @@ actas_diputaciones = 8414 * 0.9
 actas_ayuntamientos = 8356 * 0.9
 
 # Tiempo disponible para procesar las actas en minutos (desde las 20:00 horas del 2 de junio hasta las 23:59 horas del 3 de junio)
-tiempo_disponible = (23 * 60 + 59) + 4 * 60
+tiempo_disponible = 6 * 60
 
 # Calculando el tiempo total requerido para procesar todas las actas en cada categoría
 total_minutos_gubernatura = actas_gubernatura * tiempo_gubernatura 
@@ -19,7 +19,7 @@ total_minutos_ayuntamientos = actas_ayuntamientos * tiempo_ayuntamientos
 # Sumando el tiempo total necesario para procesar todas las actas
 tiempo_total_requerido = total_minutos_gubernatura + total_minutos_diputaciones + total_minutos_ayuntamientos
 
-# Calculando cuántos equipos de captura son necesarios para cumplir con el intervalo de tiempo
+# Calculando cuántos equipos de captura son necesarios para cumplir con el int.01ervalo de tiempo
 equipos_necesarios = tiempo_total_requerido / tiempo_disponible
 print(f"El número mínimo de equipos requeridos para procesar el 90% de las actas es de: {int(equipos_necesarios)}")
 

@@ -4,19 +4,29 @@ import plotly.express as px
 import os
 import warnings
 import sys
+from datetime import datetime, timedelta
 import plotly.graph_objects as go
 
-tipo_eleccion = 'AYUN' # 'GUB', 'AYUN' o 'DIP_LOC, cambiar según la base de datos a analizar
+tipo_eleccion = 'GUB' # 'GUB', 'AYUN' o 'DIP_LOC, cambiar según la base de datos a analizar
 
-inicio_intervalo = pd.to_datetime('2024-05-19 10:30')
+totales = {'GUB': 8338,
+               'DIP_LOC': 8414,
+               'AYUN': 8356}
 
-fin_intervalo = pd.to_datetime('2024-05-19 14:30')
+inicio_intervalo = pd.to_datetime('2024-05-19 10:30') # pd.to_datetime('2024-05-19 17:50') segundo simualcro
 
-folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_2' # Laptop
+fin_intervalo = pd.to_datetime('2024-05-19 19:30') # pd.to_datetime('2024-05-19 19:30') segundo
 
-#folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_1_rep' # Desktop
+hora_inicio = datetime(2024, 5, 19, 10, 30) #datetime(2024, 5, 19, 10, 30) sgundo
+
+fecha_corte = datetime(2024, 5, 19, 17, 50) # datetime(2024, 5, 19, 19, 30) segundo
+
+#folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_2' # Laptop
+
+folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_2' # Desktop
 
 warnings.filterwarnings('ignore')
+
 
 def find_csv(folder_path, identifier):
     """Busca archivos CSV en la carpeta especificada y que coincide
@@ -52,14 +62,28 @@ def load_csv(file_path):
     
     if file_path:
 
-        return pd.read_csv(file_path, skiprows = 5, low_memory=False)
+        with open(file_path, 'r', encoding='utf-8') as file:
+
+            lines = file.readlines()
+
+        info_rows = lines[4:5]
+
+        column_names = lines[3].strip().split(',')
+
+        data_info_rows = [line.strip().split(',') for line in info_rows]
+
+        info = pd.DataFrame(data_info_rows, columns=column_names)
+
+        df = pd.read_csv(file_path, skiprows = 5, low_memory=False)
+
+        return df, info
     
     else:
 
         print("No se encontró ningún archivo CSV.")
-
-    return None
-
+        
+        return None, None
+    
 def check_nans(df):
     """Revisa si existen valores NaNs en las columnas de FECHA_HORA_ACOPIO, FECHA_HORA_CAPTURA y
     FECHA_HORA_VERIFICACION. Se aplica previo a la conversión de datos tipo object a datetime para
@@ -74,6 +98,8 @@ def check_nans(df):
     df_no_nans = df.dropna(subset = ['FECHA_HORA_ACOPIO', 'FECHA_HORA_CAPTURA', 'FECHA_HORA_VERIFICACION'])
 
     return df_no_nans
+
+
 
 def change_names(df):
     """
@@ -154,7 +180,7 @@ def generar_titulo(tipo):
 
     primera = "Instituto Electoral del Estado de Puebla - Proceso Electoral 2023-2024 "
 
-    segunda = "(Segundo simulacro PREP 19 de mayo del 2024) - "
+    segunda = "(Segundo Simulacro PREP 19 de mayo del 2024) - "
 
     nombre_eleccion = titulo_elecciones.get(tipo, 'Tipo de elección desconocido')
 
@@ -170,15 +196,21 @@ def save_csv(df):
     Returns:
     saved_file (.CSV): archivo CSV"""
 
-    saved_file = df.to_csv(f'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/Data_clean/data_clean_{tipo_eleccion}.csv') # Desktop
+    saved_file = df.to_csv(f'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/Data_final/data_sim_2_{tipo_eleccion}.csv', index = False) # Desktop
 
     # saved_file = df.to_csv(f'C:/Users/franz/Desktop/simulacros_prep/Data_clean/data_clean_{tipo_eleccion}_laptop.csv') # Laptop
 
 def digit_stop(df):
 
-    last_time = df['FECHA_HORA_ACOPIO'].max()
+    last_time_acopio = df['FECHA_HORA_ACOPIO'].max()
 
-    print(f"La última fecha y hora de acopio registrada fue a las {last_time}")
+    last_time_captura = df['FECHA_HORA_CAPTURA'].max()
+
+    last_time_verificacion = df['FECHA_HORA_VERIFICACION'].max()
+
+    print(f"La última fecha y hora de acopio registrada fue a las {last_time_acopio}")
+    print(f"La última fecha y hora de captura registrada fue a las {last_time_captura}")
+    print(f"La última fecha y hora de verificación registrada fue a las {last_time_verificacion}")
 
 def acopio_serie_tiempo(df):
 
@@ -195,11 +227,26 @@ def acopio_serie_tiempo(df):
 
     fig_line.add_trace(go.Scatter(x=df_resampled.index, y = df_resampled.CODIGO_INTEGRIDAD,
                        mode = 'lines+markers', name='Actas Acopiadas',line = dict(color = line_color)))
+    
     fig_line.update_layout(
-        title = f"{generar_titulo(tipo_eleccion)}<br>Evolución temporal del Acopio de Actas de Escrutinio y Cómputo</br>",
-        xaxis_title = 'Fecha y Hora',
-        yaxis_title = 'Número de Actas Procesadas',
-        template ='plotly_white'
+        title={
+        'text': f"{generar_titulo(tipo_eleccion)}<br>Evolución temporal del Acopio de Actas de Escrutinio y Cómputo</br>",
+        'font': {'size': 20}  # Aumentar el tamaño del título
+    },
+    xaxis_title='Fecha y Hora',
+    yaxis_title='Número de Actas Procesadas',
+    xaxis=dict(
+        title_font_size=18  # Aumentar tamaño de título del eje X
+    ),
+    yaxis=dict(
+        title_font_size=18  # Aumentar tamaño de título del eje Y
+    ),
+    legend_title_text='Observaciones',
+    legend=dict(
+        font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
+        title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
+    ),
+    template='plotly_white'
     )
 
     fig_line.show()
@@ -214,7 +261,7 @@ def acopio_serie_tiempo(df):
         yaxis_title='Número de Actas',
         template='plotly_white'
     )
-    fig_hist.show()
+    #fig_hist.show()
 
 def captura_serie_tiempo(df):
 
@@ -232,10 +279,24 @@ def captura_serie_tiempo(df):
     fig_line.add_trace(go.Scatter(x=df_resampled.index, y = df_resampled.CODIGO_INTEGRIDAD,
                        mode = 'lines+markers', name='Actas Capturadas', line = dict(color = line_color)))
     fig_line.update_layout(
-        title = f"{generar_titulo(tipo_eleccion)}<br>Evolución temporal de la Captura de Actas de Escrutinio y Cómputo</br>",
-        xaxis_title = 'Fecha y Hora',
-        yaxis_title = 'Número de Actas Capturadas',
-        template ='plotly_white'
+        title={
+        'text': f"{generar_titulo(tipo_eleccion)}<br>Evolución temporal de la Captura de Actas de Escrutinio y Cómputo</br>",
+        'font': {'size': 20}  # Aumentar el tamaño del título
+    },
+    xaxis_title='Fecha y Hora',
+    yaxis_title='Número de Actas Capturadas',
+    xaxis=dict(
+        title_font_size=18  # Aumentar tamaño de título del eje X
+    ),
+    yaxis=dict(
+        title_font_size=18  # Aumentar tamaño de título del eje Y
+    ),
+    legend_title_text='Observaciones',
+    legend=dict(
+        font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
+        title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
+    ),
+    template='plotly_white'
     )
 
     fig_line.show()
@@ -250,7 +311,7 @@ def captura_serie_tiempo(df):
         yaxis_title='Número de Actas',
         template='plotly_white'
     )
-    fig_hist.show()
+    #fig_hist.show()
 
 def verificacion_serie_tiempo(df):
 
@@ -260,7 +321,7 @@ def verificacion_serie_tiempo(df):
 
     df_resampled = df.resample('20T').count()
 
-    line_color = '#FF7F0E'
+    line_color = '#109618'
     hist_color = '#00CC96'
 
     fig_line = go.Figure()
@@ -268,10 +329,24 @@ def verificacion_serie_tiempo(df):
     fig_line.add_trace(go.Scatter(x=df_resampled.index, y = df_resampled.CODIGO_INTEGRIDAD,
                        mode = 'lines+markers', name='Actas Verificadas', line = dict(color = line_color)))
     fig_line.update_layout(
-        title = f"{generar_titulo(tipo_eleccion)}<br>Evolución temporal de la Verificación de Actas de Escrutinio y Cómputo</br>",
-        xaxis_title = 'Fecha y Hora',
-        yaxis_title = 'Número de Actas Verificadas',
-        template ='plotly_white'
+       title={
+        'text': f"{generar_titulo(tipo_eleccion)}<br>Evolución temporal de la Verificación de Actas de Escrutinio y Cómputo</br>",
+        'font': {'size': 20}  # Aumentar el tamaño del título
+    },
+    xaxis_title='Fecha y Hora',
+    yaxis_title='Número de Actas Verificadas',
+    xaxis=dict(
+        title_font_size=18  # Aumentar tamaño de título del eje X
+    ),
+    yaxis=dict(
+        title_font_size=18  # Aumentar tamaño de título del eje Y
+    ),
+    legend_title_text='Observaciones',
+    legend=dict(
+        font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
+        title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
+    ),
+    template='plotly_white'
     )
 
     fig_line.show()
@@ -286,7 +361,7 @@ def verificacion_serie_tiempo(df):
         yaxis_title='Número de Actas',
         template='plotly_white'
     )
-    fig_hist.show()
+    #fig_hist.show()
 
 def analisis_serie_capturas(df, start, stop):
 
@@ -309,16 +384,98 @@ def analisis_serie_capturas(df, start, stop):
 
     conteo_capturas = df.groupby('HORA_CAPTURA').size()
 
-    fig = px.line(x = conteo_capturas.index, y = conteo_capturas.values,
-                  labels = {'x': 'Hora', 'y': 'Número de capturas'},
-                            title = f"{generar_titulo(tipo_eleccion)}<br>Captura de Actas a lo largo del día</br>")
+    line_color = '#AB63FA'
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(x = conteo_capturas.index, y = conteo_capturas.values,
+                             mode = 'lines+markers',
+                             name = 'Capturas',
+                             line=dict(color= line_color)))
+
+    
+    fig.update_layout(title={
+        'text': f"{generar_titulo(tipo_eleccion)}<br>Captura de Actas de Escrutinio y Cómputo</br>",
+        'font': {'size': 20}  # Aumentar el tamaño del título
+    },
+    xaxis_title='Fecha y Hora',
+    yaxis_title='Número de Actas Procesadas',
+    xaxis=dict(
+        title_font_size=18  # Aumentar tamaño de título del eje X
+    ),
+    yaxis=dict(
+        title_font_size=18  # Aumentar tamaño de título del eje Y
+    ),
+    legend_title_text='Observaciones',
+    legend=dict(
+        font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
+        title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
+    ),
+    template='plotly_white')
     
     fig.add_vline(x = start, line = dict(color = 'green', dash = 'dash'), name ='Inicio del intervalo')
     fig.add_vline(x = stop, line = dict(color = 'red', dash = 'dash'), name = 'Fin del intervalo')
 
     fig.show()
 
+def analisis_serie_verificaciones(df, start, stop):
+
+    verificaciones_intervalo = df[(df['FECHA_HORA_VERIFICACION'] >= start) & (df['FECHA_HORA_VERIFICACION'] <= stop)]
+
+    num_verificaciones_intervalo = verificaciones_intervalo.shape[0]
+
+    print(f"El número de verificaciones en el intervalo de {start} a {stop} es de: {num_verificaciones_intervalo}")
+
+    verificaciones_intervalo['Tiempo_Acopio_Captura'] = (verificaciones_intervalo['FECHA_HORA_CAPTURA'] - verificaciones_intervalo['FECHA_HORA_ACOPIO']).dt.total_seconds()
+
+    verificaciones_intervalo['Tiempo_Captura_Verificacion'] = (verificaciones_intervalo['FECHA_HORA_VERIFICACION'] - verificaciones_intervalo['FECHA_HORA_CAPTURA']).dt.total_seconds()
+
+    print()
+    print()
+
+    print(verificaciones_intervalo[['Tiempo_Acopio_Captura', 'Tiempo_Captura_Verificacion']].describe())
+
+    df['HORA_VERIFICACION'] = df['FECHA_HORA_VERIFICACION'].dt.floor('T')
+
+    conteo_verificaciones = df.groupby('HORA_VERIFICACION').size()
+
+    line_color = 'rgb(228,26,28)'
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(x = conteo_verificaciones.index, y = conteo_verificaciones.values,
+                             mode = 'lines+markers',
+                             name = 'Verificaciones',
+                             line = dict(color = line_color)))
+
+    fig.update_layout(title={
+        'text': f"{generar_titulo(tipo_eleccion)}<br>Verificación de Actas de Escrutinio y Cómputo</br>",
+        'font': {'size': 20}  # Aumentar el tamaño del título
+    },
+    xaxis_title='Fecha y Hora',
+    yaxis_title='Número de Actas Verificadas',
+    xaxis=dict(
+        title_font_size=18  # Aumentar tamaño de título del eje X
+    ),
+    yaxis=dict(
+        title_font_size=18  # Aumentar tamaño de título del eje Y
+    ),
+    legend_title_text='Observaciones',
+    legend=dict(
+        font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
+        title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
+    ),
+    template='plotly_white')
+
+    fig.add_vline(x=start, line=dict(color='green', dash='dash'), name='Inicio del intervalo')
+    fig.add_vline(x=stop, line=dict(color='red', dash='dash'), name='Fin del intervalo')
+
+    fig.show()
+
+
 def tiempos_finales(df, tipo_eleccion):
+
+    df = df[df['CONTABILIZADA'] != 2] 
 
     df['HORA_CAPTURA'] = df['FECHA_HORA_CAPTURA'].dt.floor('T')
 
@@ -327,8 +484,10 @@ def tiempos_finales(df, tipo_eleccion):
     totales = {'GUB': 8338,
                'DIP_LOC': 8414,
                'AYUN': 8356}
+
     
-    porcentaje_captura = conteo_capturas/totales.get(tipo_eleccion) * 100
+    porcentaje_captura = (conteo_capturas/totales.get(tipo_eleccion)) * 100
+
 
     def momento_captura_completa(porcentaje_captura):
 
@@ -346,24 +505,267 @@ def tiempos_finales(df, tipo_eleccion):
 
     porcentaje_real = porcentaje_captura.iloc[-1]
 
+    actas_capturadas_actual = conteo_capturas.iloc[-1]
+
     print(f"El momento en el que se alancazó el 100% de actas capturadas fue el: {momento_100}")
 
+    print(f"La cantidad actual de actas capturadas es de: {actas_capturadas_actual} actas")
+
     print(f"El porcentaje actual de actas capturadas es: {porcentaje_real:.2f}%")
+
+def proyeccion_tiempos(df, info, start, stop):
+
+    diff_tiempo = stop - start
+
+    total_actas = totales.get(tipo_eleccion)
+
+    tiempo_procesamiento_disponible = diff_tiempo.total_seconds() / 60
+
+    actas_capturadas = info['ACTAS_CAPTURADAS']
+
+    tiempo_procesamiento_prom = df['TIEMPO_PROCESAMIENTO_MINUTOS'].mean().round(2)
+
+    tiempo_proyectado_total = tiempo_procesamiento_prom * total_actas
+
+    tiempo_restante = (tiempo_proyectado_total - tiempo_procesamiento_disponible)/60
+
+    hora_estimada_finalizacion = start + timedelta(minutes = tiempo_restante)
+
+    print(f"La fecha estimada para terminar de procesar el 100% de las actas de {titulo_elecciones.get(tipo_eleccion)} al ritmo llevado en el simulacro sería: {hora_estimada_finalizacion}")
+
+def equipos_necesarios(df, horas_disponibles = 4, porcentaje_actas = 1.0):
+
+    tiempo_prom_por_acta = df['TIEMPO_PROCESAMIENTO_MINUTOS'].mean().round(2)
+
+    actas_a_procesar = totales.get(tipo_eleccion) * porcentaje_actas
+
+    tiempo_disponible_min =  horas_disponibles * 60
+
+    tiempo_total_requerido = actas_a_procesar * tiempo_prom_por_acta
+
+    equipos_necesarios = tiempo_total_requerido/tiempo_disponible_min
+
+    return print(f"El número mínimo de equipos necesarios para procesar el {porcentaje_actas*100}% de las actas de {titulo_elecciones.get(tipo_eleccion)} en {horas_disponibles} horas es de {int(equipos_necesarios)} equipos.")
+
+def group_plots(df):
+
+    group_obs = df.groupby('OBSERVACIONES', as_index=False)['TIEMPO_PROCESAMIENTO_MINUTOS'].mean().round(2)
+
+    group_metodo = df.groupby('DIGITALIZACION', as_index = False)['TIEMPO_PROCESAMIENTO_MINUTOS'].mean().round(2)
+
+    group_count_obs = df['OBSERVACIONES'].value_counts().reset_index(name = 'count')
+
+    group_count_metodos = df['DIGITALIZACION'].value_counts().reset_index(name = 'count')
+
+    group_count_origen = df['ORIGEN'].value_counts().reset_index(name = 'count')
+
+    group_count_cont = df['CONTABILIZADA'].value_counts().reset_index(name = 'count')
+
+    group_count_cont['CONTABILIZADA'] = group_count_cont['CONTABILIZADA'].replace({0: 'No contabilizada', 1: 'Contabilizada'})
+
+    #group_count_doc = df['TIPO_DOCUMENTO'].value_counts().reset_index(name = 'count')
+
+
+    fig_1 = px.bar(group_obs, x = 'OBSERVACIONES', y = 'TIEMPO_PROCESAMIENTO_MINUTOS',
+             title = generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por observación </br>',
+             labels = {'TIEMPO_PROCESAMIENTO_MINUTOS': 'Promedio de tiempo (minutos)', 'OBSERVACIONES': 'Observaciones'},
+             color = 'OBSERVACIONES',
+             text='TIEMPO_PROCESAMIENTO_MINUTOS',
+             text_auto=True,
+             color_discrete_sequence=px.colors.qualitative.T10)
+
+    fig_1.update_traces(textfont_size = 20)
+
+    fig_1.update_layout(
+    title={
+        'text': generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por observación</br>',
+        'font': {'size': 20}  # Aumentar el tamaño del título
+    },
+    legend_title_text='Observaciones',
+    legend=dict(
+        font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
+        title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
+    ),
+    xaxis_title_font_size=18,  # Aumentar tamaño de título del eje X
+    yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
+)
+
+    fig_1.show()
+
+    fig_2 = px.bar(group_metodo, x = 'DIGITALIZACION', y = 'TIEMPO_PROCESAMIENTO_MINUTOS',
+             title = generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por método de digitalización </br>',
+             labels = {'TIEMPO_PROCESAMIENTO_MINUTOS': 'Promedio de tiempo (minutos)', 'DIGITALIZACION': 'Método'},
+             color = 'DIGITALIZACION',
+             text = 'TIEMPO_PROCESAMIENTO_MINUTOS',
+             text_auto=True,
+             color_discrete_sequence=px.colors.qualitative.Pastel2)
+
+    fig_2.update_traces(textfont_size = 20)
+
+    fig_2.update_layout(
+    title={
+        'text': generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por observación</br>',
+        'font': {'size': 20}  # Aumentar el tamaño del título
+    },
+    legend_title_text='Observaciones',
+    legend=dict(
+        font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
+        title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
+    ),
+    xaxis_title_font_size=18,  # Aumentar tamaño de título del eje X
+    yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
+)
+
+
+    fig_2.show()
+
+    fig_3 = px.box(data_plot, x = 'TIEMPO_PROCESAMIENTO_MINUTOS',
+               title = generar_titulo(tipo_eleccion) + '<br>Distribución del tiempo de procesamiento de actas</br>', 
+               labels = {'TIEMPO_PROCESAMIENTO_MINUTOS': 'Tiempo de procesamiento'},
+               color_discrete_sequence=px.colors.qualitative.Prism)
+
+    fig_3.update_layout(
+    title = {
+        'text': generar_titulo(tipo_eleccion) + '<br>Distribución del tiempo de procesamiento de actas</br>',
+        'font': {'size': 20}
+    },
+    xaxis_title='Tiempo de procesamiento (minutos)',
+    yaxis_title='Frecuencia',
+    xaxis_title_font={'size': 16},  # Aumentar tamaño del título del eje X
+    yaxis_title_font={'size': 16}   # Aumentar tamaño del título del eje Y
+)
+
+    fig_3.show()
+
+    fig_4 = px.bar(group_count_obs, x = 'OBSERVACIONES', y = 'count',
+                   title = generar_titulo(tipo_eleccion) + '<br>Cantidad de actas por tipo de observación </br>',
+             labels = {'count': 'Total de Actas', 'OBSERVACIONES': 'Observaciones'},
+             color = 'OBSERVACIONES',
+             text='count',
+             text_auto=True,
+             color_discrete_sequence=px.colors.qualitative.Alphabet)
+    
+    fig_4.update_traces(textfont_size = 20)
+
+    fig_4.update_layout(
+    title={
+        'text': generar_titulo(tipo_eleccion) + '<br>Cantidad de actas por tipo de observación</br>',
+        'font': {'size': 20}  # Aumentar el tamaño del título
+    },
+    legend_title_text='Observaciones',
+    legend=dict(
+        font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
+        title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
+    ),
+    xaxis_title_font_size=18,  # Aumentar tamaño de título del eje X
+    yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
+)
+
+    fig_4.show()
+
+    fig_5 = px.bar(group_count_metodos, x = 'DIGITALIZACION', y = 'count',
+                    title = generar_titulo(tipo_eleccion) + '<br>Cantidad de actas por tipo método de digitalización </br>',
+             labels = {'count': 'Total de Actas', 'DIGITALIZACION': 'Método'},
+             color = 'DIGITALIZACION',
+             text='count',
+             text_auto=True,
+             color_discrete_sequence=px.colors.qualitative.Bold)
+    
+    fig_5.update_traces(textfont_size = 20)
+
+    fig_5.update_layout(
+    title={
+        'text': generar_titulo(tipo_eleccion) + '<br>Cantidad de actas por tipo de método de digitalización</br>',
+        'font': {'size': 20}  # Aumentar el tamaño del título
+    },
+    legend_title_text='Observaciones',
+    legend=dict(
+        font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
+        title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
+    ),
+    xaxis_title_font_size=18,  # Aumentar tamaño de título del eje X
+    yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
+)
+
+    fig_5.show()
+
+    fig_6 = px.bar(group_count_origen, x = 'ORIGEN', y = 'count',
+                    title = generar_titulo(tipo_eleccion) + '<br>Cantidad de actas por tipo de origen </br>',
+             labels = {'count': 'Total de Actas', 'ORIGEN': 'Origen'},
+             color = 'ORIGEN',
+             text='count',
+             text_auto=True,
+             color_discrete_sequence=px.colors.qualitative.D3)
+    
+    
+    fig_6.update_traces(textfont_size = 20)
+
+    fig_6.update_layout(
+    title={
+        'text': generar_titulo(tipo_eleccion) + '<br>Cantidad de actas por tipo de origen</br>',
+        'font': {'size': 20}  # Aumentar el tamaño del título
+    },
+    legend_title_text='Origen',
+    legend=dict(
+        font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
+        title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
+    ),
+    xaxis_title_font_size=18,  # Aumentar tamaño de título del eje X
+    yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
+)
+
+    #fig_6.show()
+
+    fig_7 = px.bar(group_count_cont, x = 'CONTABILIZADA', y = 'count',
+                    title = generar_titulo(tipo_eleccion) + '<br>Cantidad de actas contabilizadas </br>',
+             labels = {'count': 'Total de Actas', 'CONTABILIZADA': 'Contabilizada'},
+             color = 'CONTABILIZADA',
+             text='count',
+             text_auto=True,
+             color_discrete_sequence=px.colors.qualitative.Plotly)
+    
+    
+    fig_7.update_traces(textfont_size = 20)
+
+    fig_7.update_layout(
+    title={
+        'text': generar_titulo(tipo_eleccion) + '<br>Cantidad de actas contabilizadas</br>',
+        'font': {'size': 20}  # Aumentar el tamaño del título
+    },
+    legend_title_text='Contabilizada',
+    legend=dict(
+        font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
+        title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
+    ),
+    xaxis_title_font_size=18,  # Aumentar tamaño de título del eje X
+    yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
+)
+
+    fig_7.show()
+
 
 print(f"Tipo de elección: {titulo_elecciones.get(tipo_eleccion)}")
 
 csv_file_path = find_csv(folder_path, tipo_eleccion)
 
-df = load_csv(csv_file_path)
+df, info = load_csv(csv_file_path)
 
 print()
 print()
 
-if df is not None:
-
+if df is not None and info is not None:
+    print("Base de datos: \n")
     print(df.head())
 
+    print()
+    print()
+
+    print("Información general de la base: \n")
+    print(info)
+
+
 data_no_nan = check_nans(df)
+
 
 print()
 print()
@@ -416,6 +818,8 @@ data_plot = change_names(data_no_nan)
 
 data_plot = check_negs(data_plot, 'TIEMPO_PROCESAMIENTO_MINUTOS')
 
+data_plot = data_plot[data_plot['CONTABILIZADA'] != 2] # REMOVE IF DOESN'T WORK
+
 print()
 print()
 
@@ -438,10 +842,22 @@ print(f"El tiempo máximo de verificación, en minutos, fue de: {data_plot['TIEM
 print()
 print()
 
+
 print(digit_stop(data_plot))
 
 print()
 print()
+
+print(proyeccion_tiempos(data_plot, info, hora_inicio, fecha_corte))
+
+print()
+print()
+
+print(equipos_necesarios(data_plot, 4, 0.9))
+
+tiempos_finales(data_plot, tipo_eleccion)
+
+#save_csv(data_plot)
 
 acopio_serie_tiempo(data_plot)
 
@@ -449,95 +865,13 @@ captura_serie_tiempo(data_plot)
 
 verificacion_serie_tiempo(data_plot)
 
-
-group_obs = data_plot.groupby('OBSERVACIONES', as_index=False)['TIEMPO_PROCESAMIENTO_MINUTOS'].mean().round(2)
-
-group_metodo = data_plot.groupby('DIGITALIZACION', as_index = False)['TIEMPO_PROCESAMIENTO_MINUTOS'].mean().round(2)
-
-conteo_metodos = data_plot['DIGITALIZACION'].value_counts()
-
-print(f"La cantidad de actas procesadas por método de digitalización es de: \n")
-
-print(conteo_metodos)
-
-fig_1 = px.bar(group_obs, x = 'OBSERVACIONES', y = 'TIEMPO_PROCESAMIENTO_MINUTOS',
-             title = generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por observación </br>',
-             labels = {'TIEMPO_PROCESAMIENTO_MINUTOS': 'Promedio de tiempo (minutos)', 'OBSERVACIONES': 'Observaciones'},
-             color = 'OBSERVACIONES',
-             text='TIEMPO_PROCESAMIENTO_MINUTOS',
-             text_auto=True,
-             color_discrete_sequence=px.colors.qualitative.Pastel1)
-
-fig_1.update_traces(textfont_size = 20)
-
-fig_1.update_layout(
-    title={
-        'text': generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por observación</br>',
-        'font': {'size': 20}  # Aumentar el tamaño del título
-    },
-    legend_title_text='Observaciones',
-    legend=dict(
-        font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
-        title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
-    ),
-    xaxis_title_font_size=18,  # Aumentar tamaño de título del eje X
-    yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
-)
-
-fig_1.show()
-
-fig_2 = px.bar(group_metodo, x = 'DIGITALIZACION', y = 'TIEMPO_PROCESAMIENTO_MINUTOS',
-             title = generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por método de digitalización </br>',
-             labels = {'TIEMPO_PROCESAMIENTO_MINUTOS': 'Promedio de tiempo (minutos)', 'DIGITALIZACION': 'Método'},
-             color = 'DIGITALIZACION',
-             text = 'TIEMPO_PROCESAMIENTO_MINUTOS',
-             text_auto=True,
-             color_discrete_sequence=px.colors.qualitative.Pastel2)
-
-fig_2.update_traces(textfont_size = 20)
-
-fig_2.update_layout(
-    title={
-        'text': generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por observación</br>',
-        'font': {'size': 20}  # Aumentar el tamaño del título
-    },
-    legend_title_text='Observaciones',
-    legend=dict(
-        font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
-        title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
-    ),
-    xaxis_title_font_size=18,  # Aumentar tamaño de título del eje X
-    yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
-)
-
-
-fig_2.show()
-
-fig_3 = px.box(data_plot, x = 'TIEMPO_PROCESAMIENTO_MINUTOS',
-               title = generar_titulo(tipo_eleccion) + '<br>Distribución del tiempo de procesamiento de actas</br>', 
-               labels = {'TIEMPO_PROCESAMIENTO_MINUTOS': 'Tiempo de procesamiento'},
-               color_discrete_sequence=px.colors.qualitative.Prism)
-
-fig_3.update_layout(
-    title = {
-        'text': generar_titulo(tipo_eleccion) + '<br>Distribución del tiempo de procesamiento de actas</br>',
-        'font': {'size': 20}
-    },
-    xaxis_title='Tiempo de procesamiento (minutos)',
-    yaxis_title='Frecuencia',
-    xaxis_title_font={'size': 16},  # Aumentar tamaño del título del eje X
-    yaxis_title_font={'size': 16}   # Aumentar tamaño del título del eje Y
-)
-
-fig_3.show()
-
-print()
-print()
-
 analisis_serie_capturas(data_plot, start = inicio_intervalo, stop = fin_intervalo)
+
+analisis_serie_verificaciones(data_plot, start=inicio_intervalo, stop=fin_intervalo)
+
+group_plots(data_plot)
 
 print()
 print()
 tiempos_finales(data_plot, tipo_eleccion)
 
-#save_csv(data_plot)
