@@ -13,9 +13,9 @@ tipo_eleccion = str(input("Indique el tipo de elección: 'GUB', 'DIP_LOC' o 'AYU
 
 if simulacro == '1':
 
-    folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_1' #Desktop
+    #folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_1' #Desktop
 
-    # folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_1' # Laptop
+    folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_1' # Laptop
 
     inicio_intervalo = pd.to_datetime('2024-05-12 10:00')
 
@@ -27,9 +27,9 @@ if simulacro == '1':
 
 elif simulacro == '1.2':
 
-    folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_1_rep'
+    #folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_1_rep'
 
-    # folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_1_rep' # Laptop
+    folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_1_rep' # Laptop
 
     inicio_intervalo = pd.to_datetime('2024-05-17 20:00')
 
@@ -41,9 +41,9 @@ elif simulacro == '1.2':
 
 elif simulacro == '2':
 
-    folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_2'
+    #folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_2'
 
-    # folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_2' # Laptop
+    folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_2' # Laptop
 
     inicio_intervalo = pd.to_datetime('2024-05-19 17:00')
 
@@ -56,22 +56,22 @@ elif simulacro == '2':
 
 else:
 
-    folder_path = 'C:\Users\Francisco Valerio\Desktop\INE\Simulacros\simulacros_prep\BDD_Simulacro_3'  #Desktop
+    #folder_path = 'C:\Users\Francisco Valerio\Desktop\INE\Simulacros\simulacros_prep\BDD_Simulacro_3'  #Desktop
 
-    # folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_3' # Laptop
+    folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_3' # Laptop
 
-    inicio_intervalo = pd.to_datetime('2024-05-26 10:30')
+    inicio_intervalo = pd.to_datetime('2024-05-26 10:00')
 
     fin_intervalo = pd.to_datetime('2024-05-26 12:00')
 
-    hora_inicio = datetime(2024, 5, 26, 10, 30)
+    hora_inicio = datetime(2024, 5, 26, 10, 00)
 
-    fecha_corte = datetime(2024, 5, 26, 21,00)
+    fecha_corte = datetime(2024, 5, 26, 12,00)
 
 
-totales = {'GUB': 8338,
-               'DIP_LOC': 8414,
-               'AYUN': 8356}
+totales = {'GUB': 8334,
+               'DIP_LOC': 8423,
+               'AYUN': 8352}
 
 
 warnings.filterwarnings('ignore')
@@ -602,17 +602,22 @@ def group_plots(df):
 
     group_metodo = df.groupby('DIGITALIZACION', as_index = False)['TIEMPO_PROCESAMIENTO_MINUTOS'].mean().round(2)
 
-    group_count_obs = df['OBSERVACIONES'].value_counts().reset_index(name = 'count')
+    #group_count_obs = df['OBSERVACIONES'].value_counts().reset_index(name = 'count')
 
-    group_count_metodos = df['DIGITALIZACION'].value_counts().reset_index(name = 'count')
+    #group_count_metodos = df['DIGITALIZACION'].value_counts().reset_index(name = 'count')
 
-    group_count_origen = df['ORIGEN'].value_counts().reset_index(name = 'count')
+    #group_count_origen = df['ORIGEN'].value_counts().reset_index(name = 'count')
 
-    group_count_cont = df['CONTABILIZADA'].value_counts().reset_index(name = 'count')
+    #group_count_cont = df['CONTABILIZADA'].value_counts().reset_index(name = 'count')
 
-    group_count_cont['CONTABILIZADA'] = group_count_cont['CONTABILIZADA'].replace({0: 'No contabilizada', 1: 'Contabilizada'})
 
     #group_count_doc = df['TIPO_DOCUMENTO'].value_counts().reset_index(name = 'count')
+
+    group_count_obs = df['OBSERVACIONES'].value_counts().reset_index(name='count').rename(columns={'index': 'OBSERVACIONES'})
+    group_count_metodos = df['DIGITALIZACION'].value_counts().reset_index(name='count').rename(columns={'index': 'DIGITALIZACION'})
+    group_count_origen = df['ORIGEN'].value_counts().reset_index(name='count').rename(columns={'index': 'ORIGEN'})
+    group_count_cont = df['CONTABILIZADA'].value_counts().reset_index(name='count').rename(columns={'index': 'CONTABILIZADA'})
+    group_count_cont['CONTABILIZADA'] = group_count_cont['CONTABILIZADA'].replace({0: 'No contabilizada', 1: 'Contabilizada'})
 
 
     fig_1 = px.bar(group_obs, x = 'OBSERVACIONES', y = 'TIEMPO_PROCESAMIENTO_MINUTOS',
