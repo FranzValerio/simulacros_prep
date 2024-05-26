@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-tipo_eleccion = 'GUB' # 'DIP_LOC' o 'AYUN'
+tipo_eleccion = 'AYUN' # 'DIP_LOC' o 'AYUN'
 
 titulo_elecciones = {'GUB': 'Gubernatura',
                      'DIP_LOC': 'Diputaciones Locales',
@@ -12,6 +12,10 @@ folder_path_sim1 = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros
 folder_path_sim1_2 = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/Data_final/BDD_Simulacro_1_2'
 
 folder_path_sim2 = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/Data_final/BDD_Simulacro_2'
+
+totales = {'GUB': 8338,
+           'DIP_LOC': 8414,
+           'AYUN': 8356}
 
 def find_csv(folder_path, identifier):
     """Busca archivos CSV en la carpeta especificada y que coincide
@@ -68,6 +72,36 @@ def comparar_promedios(df1, df2, nombre_df1, nombre_df2):
     
     return resultado
 
+def calcular_incremento_actas(df1, df2, nombre_df1, nombre_df2, tipo_eleccion):
+    actas_capturadas_df1 = df1.shape[0]
+    actas_capturadas_df2 = df2.shape[0]
+    
+    incremento = actas_capturadas_df2 - actas_capturadas_df1
+    porcentaje_incremento = (incremento / totales[tipo_eleccion]) * 100
+    
+    return f"El número de actas capturadas en {nombre_df2} aumentó en {incremento} actas ({porcentaje_incremento:.2f}%) respecto a {nombre_df1}."
+
+def check_nans(df):
+    """Revisa si existen valores NaNs en las columnas de FECHA_HORA_ACOPIO, FECHA_HORA_CAPTURA y
+    FECHA_HORA_VERIFICACION. Se aplica previo a la conversión de datos tipo object a datetime para
+    poder calcular el tiempo de procesamiento
+    
+    Args:
+    df (pd.DataFrame): La dataframe que se va a utilizar
+    
+    Returns:
+    df_no_nans (pd.DataFrame): La dataframe sin valores NaNs en esas columnas"""
+
+    df_no_nans = df.dropna(subset = ['FECHA_HORA_ACOPIO', 'FECHA_HORA_CAPTURA', 'FECHA_HORA_VERIFICACION'])
+
+    df_tiempos_validos = df_no_nans[~df_no_nans['FECHA_HORA_CAPTURA'].isin(['-', 'N/A'])]
+
+    df_contabilizadas = df_tiempos_validos[~df_tiempos_validos['CONTABILIZADA'].isin([0, 2])]
+
+    df_filtrada = df_contabilizadas[~df_contabilizadas['OBSERVACIONES'].str.startswith('SIN ACTA')]
+
+    return df_filtrada
+
 print(f"Tipo de elección: {titulo_elecciones.get(tipo_eleccion)}")
 
 csv_file_path_1 = find_csv(folder_path_sim1, tipo_eleccion)
@@ -82,5 +116,18 @@ df_sim_1_2 = load_csv(csv_file_path_1_2)
 
 df_sim_2 = load_csv(csv_file_path_2)
 
-print(comparar_promedios(df_sim_1, df_sim_1_2, "Simulacro 1", "Simulacro 1.2"))
-print(comparar_promedios(df_sim_1_2, df_sim_2, "Simulacro 1.2", "Simulacro 2"))
+df_clean_sim_1 = check_nans(df_sim_1)
+
+df_clean_sim_1_2 = check_nans(df_sim_1_2)
+
+df_clean_sim_2 = check_nans(df_sim_2)
+
+print(comparar_promedios(df_clean_sim_1, df_clean_sim_1_2, "Simulacro 1", "Simulacro 1.2"))
+print(comparar_promedios(df_clean_sim_1_2, df_clean_sim_2, "Simulacro 1.2", "Simulacro 2"))
+
+print(calcular_incremento_actas(df_clean_sim_1, df_clean_sim_1_2, "Simulacro 1", "Simulacro 1.2", tipo_eleccion))
+print(calcular_incremento_actas(df_clean_sim_1_2, df_clean_sim_2, "Simulacro 1.2", "Simulacro 2", tipo_eleccion))
+
+print(f"La cantidad de actas capturadas en el Primer Simulacro PREP fue de: {df_clean_sim_1.shape[0]} actas")
+print(f"La cantidad de actas capturadas en la Repetición del Primer Simulacro PREP fue de: {df_clean_sim_1_2.shape[0]} actas")
+print(f"La cantidad de actas capturadas en el Segundo Simulacro PREP fue de: {df_clean_sim_2.shape[0]} actas")

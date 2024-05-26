@@ -7,23 +7,72 @@ import sys
 from datetime import datetime, timedelta
 import plotly.graph_objects as go
 
-tipo_eleccion = 'GUB' # 'GUB', 'AYUN' o 'DIP_LOC, cambiar según la base de datos a analizar
+simulacro = str(input("¿Qué simulacro desea analizar?: "))
+
+tipo_eleccion = str(input("Indique el tipo de elección: 'GUB', 'DIP_LOC' o 'AYUN': ")).upper()
+
+if simulacro == '1':
+
+    folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_1' #Desktop
+
+    # folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_1' # Laptop
+
+    inicio_intervalo = pd.to_datetime('2024-05-12 10:00')
+
+    fin_intervalo = pd.to_datetime('2024-05-12 20:00')
+
+    hora_inicio = datetime(2024, 5, 12, 10, 00)
+
+    fecha_corte = datetime(2024, 5, 12, 21, 00)
+
+elif simulacro == '1.2':
+
+    folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_1_rep'
+
+    # folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_1_rep' # Laptop
+
+    inicio_intervalo = pd.to_datetime('2024-05-17 20:00')
+
+    fin_intervalo = pd.to_datetime('2024-05-17 20:40')
+
+    hora_inicio = datetime(2024, 5, 17, 10, 30)
+
+    fecha_corte = datetime(2024, 5, 17, 21, 00)
+
+elif simulacro == '2':
+
+    folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_2'
+
+    # folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_2' # Laptop
+
+    inicio_intervalo = pd.to_datetime('2024-05-19 17:00')
+
+    fin_intervalo = pd.to_datetime('2024-05-19 19:30')
+
+    hora_inicio = datetime(2024, 5, 19, 10, 00)
+
+    fecha_corte = datetime(2024, 5, 19, 21, 00)
+
+
+else:
+
+    folder_path = 'C:\Users\Francisco Valerio\Desktop\INE\Simulacros\simulacros_prep\BDD_Simulacro_3'  #Desktop
+
+    # folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_3' # Laptop
+
+    inicio_intervalo = pd.to_datetime('2024-05-26 10:30')
+
+    fin_intervalo = pd.to_datetime('2024-05-26 12:00')
+
+    hora_inicio = datetime(2024, 5, 26, 10, 30)
+
+    fecha_corte = datetime(2024, 5, 26, 21,00)
+
 
 totales = {'GUB': 8338,
                'DIP_LOC': 8414,
                'AYUN': 8356}
 
-inicio_intervalo = pd.to_datetime('2024-05-19 10:30') # pd.to_datetime('2024-05-19 17:50') segundo simualcro
-
-fin_intervalo = pd.to_datetime('2024-05-19 19:30') # pd.to_datetime('2024-05-19 19:30') segundo
-
-hora_inicio = datetime(2024, 5, 19, 10, 30) #datetime(2024, 5, 19, 10, 30) sgundo
-
-fecha_corte = datetime(2024, 5, 19, 17, 50) # datetime(2024, 5, 19, 19, 30) segundo
-
-#folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_2' # Laptop
-
-folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_2' # Desktop
 
 warnings.filterwarnings('ignore')
 
@@ -604,10 +653,10 @@ def group_plots(df):
 
     fig_2.update_layout(
     title={
-        'text': generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por observación</br>',
+        'text': generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por método de digitalización</br>',
         'font': {'size': 20}  # Aumentar el tamaño del título
     },
-    legend_title_text='Observaciones',
+    legend_title_text='Digitalización',
     legend=dict(
         font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
         title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
@@ -678,7 +727,7 @@ def group_plots(df):
         'text': generar_titulo(tipo_eleccion) + '<br>Cantidad de actas por tipo de método de digitalización</br>',
         'font': {'size': 20}  # Aumentar el tamaño del título
     },
-    legend_title_text='Observaciones',
+    legend_title_text='Digitalización',
     legend=dict(
         font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
         title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
@@ -744,6 +793,7 @@ def group_plots(df):
     fig_7.show()
 
 
+print(f"Simulacro {simulacro} realizado el {hora_inicio}")
 print(f"Tipo de elección: {titulo_elecciones.get(tipo_eleccion)}")
 
 csv_file_path = find_csv(folder_path, tipo_eleccion)
@@ -777,8 +827,8 @@ print(f"Número de datos nulos en FECHA_HORA_VERIFICACION: {data_no_nan.FECHA_HO
 print()
 print()
 
-print("Tipos de datos antes de la conversión: ")
-print(data_no_nan[['FECHA_HORA_ACOPIO', 'FECHA_HORA_CAPTURA', 'FECHA_HORA_VERIFICACION']].dtypes)
+#print("Tipos de datos antes de la conversión: ")
+#print(data_no_nan[['FECHA_HORA_ACOPIO', 'FECHA_HORA_CAPTURA', 'FECHA_HORA_VERIFICACION']].dtypes)
 
 data_no_nan['FECHA_HORA_ACOPIO'] = pd.to_datetime(data_no_nan['FECHA_HORA_ACOPIO'], format = '%d/%m/%Y %H:%M:%S',  errors='coerce')
 data_no_nan['FECHA_HORA_CAPTURA'] = pd.to_datetime(data_no_nan['FECHA_HORA_CAPTURA'], format = '%d/%m/%Y %H:%M:%S', errors='coerce')
@@ -823,6 +873,9 @@ data_plot = data_plot[data_plot['CONTABILIZADA'] != 2] # REMOVE IF DOESN'T WORK
 print()
 print()
 
+print("Estadísticos descriptivos del tiempo de procesamiento: \n")
+print()
+
 print(f"El tiempo de procesamiento promedio, en minutos, fue de: {data_plot['TIEMPO_PROCESAMIENTO_MINUTOS'].mean().round(2)}")
 print(f"La mediana del tiempo de procesamiento, en minutos, fue de: {data_plot['TIEMPO_PROCESAMIENTO_MINUTOS'].median().round(2)}")
 print(f"La desviación estándar del tiempo de procesamiento, en minutos, fue de: {data_plot['TIEMPO_PROCESAMIENTO_MINUTOS'].std().round(2)}")
@@ -832,7 +885,8 @@ print(f"El tiempo máximo de procesamiento, en minutos, fue de: {data_plot['TIEM
 print()
 print()
 
-
+print("Estadísticos descriptivos del tiempo de verificación: \n")
+print()
 print(f"El tiempo de verificación promedio, en minutos, fue de: {data_plot['TIEMPO_PROCESAMIENTO_VERIFICACION_MINUTOS'].mean().round(2)}")
 print(f"La mediana del tiempo de verificación, en minutos, fue de: {data_plot['TIEMPO_PROCESAMIENTO_VERIFICACION_MINUTOS'].median().round(2)}")
 print(f"La desviación estándar del tiempo de verificación, en minutos, fue de: {data_plot['TIEMPO_PROCESAMIENTO_VERIFICACION_MINUTOS'].std().round(2)}")
@@ -870,8 +924,3 @@ analisis_serie_capturas(data_plot, start = inicio_intervalo, stop = fin_interval
 analisis_serie_verificaciones(data_plot, start=inicio_intervalo, stop=fin_intervalo)
 
 group_plots(data_plot)
-
-print()
-print()
-tiempos_finales(data_plot, tipo_eleccion)
-
