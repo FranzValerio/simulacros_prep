@@ -1,0 +1,7 @@
+El corte de energía se realizó a las 14:20 horas aproximadamente.
+
+El tiempo entre el corte y la activación de la planta de emergencia, fue de aproximadamente: 02:36 min
+
+El tiempo entre el corte y la reactivación de la energía en el CCV fue de aproximadamente: 07:26 min
+
+Verificar por qué es que existen tiempos negativos, sólo en los casos de PREP Casilla

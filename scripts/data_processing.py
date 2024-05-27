@@ -60,13 +60,13 @@ else:
 
     folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_3' # Laptop
 
-    inicio_intervalo = pd.to_datetime('2024-05-26 10:00')
+    inicio_intervalo = pd.to_datetime('2024-05-26 16:20')
 
-    fin_intervalo = pd.to_datetime('2024-05-26 12:00')
+    fin_intervalo = pd.to_datetime('2024-05-26 17:00')
 
-    hora_inicio = datetime(2024, 5, 26, 10, 00)
+    hora_inicio = datetime(2024, 5, 26, 10, 20)
 
-    fecha_corte = datetime(2024, 5, 26, 12,00)
+    fecha_corte = datetime(2024, 5, 26, 16,40)
 
 
 totales = {'GUB': 8334,
@@ -147,8 +147,6 @@ def check_nans(df):
     df_no_nans = df.dropna(subset = ['FECHA_HORA_ACOPIO', 'FECHA_HORA_CAPTURA', 'FECHA_HORA_VERIFICACION'])
 
     return df_no_nans
-
-
 
 def change_names(df):
     """
@@ -427,7 +425,7 @@ def analisis_serie_capturas(df, start, stop):
     print()
     print()
 
-    print(capturas_intervalo[['Tiempo_Acopio_Captura', 'Tiempo_Captura_Verificacion']].describe())
+    #print(capturas_intervalo[['Tiempo_Acopio_Captura', 'Tiempo_Captura_Verificacion']].describe())
 
     df['HORA_CAPTURA'] = df['FECHA_HORA_CAPTURA'].dt.floor('T')
 
@@ -768,7 +766,7 @@ def group_plots(df):
     yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
 )
 
-    #fig_6.show()
+    fig_6.show()
 
     fig_7 = px.bar(group_count_cont, x = 'CONTABILIZADA', y = 'count',
                     title = generar_titulo(tipo_eleccion) + '<br>Cantidad de actas contabilizadas </br>',
@@ -864,10 +862,11 @@ data_no_nan['TIEMPO_PROCESAMIENTO_VERIFICACION_MINUTOS'] = data_no_nan['TIEMPO_P
 print()
 print()
 
-print(data_no_nan[['FECHA_HORA_ACOPIO', 'FECHA_HORA_CAPTURA', 'TIEMPO_PROCESAMIENTO_MINUTOS','TIEMPO_PROCESAMIENTO_VERIFICACION_MINUTOS' ]].head())
+print(data_no_nan[['FECHA_HORA_ACOPIO', 'FECHA_HORA_CAPTURA', 'TIEMPO_PROCESAMIENTO_MINUTOS','TIEMPO_PROCESAMIENTO_VERIFICACION_MINUTOS' ]].iloc[40:50])
 
 print()
 print()
+
 
 data_plot = change_names(data_no_nan)
 
@@ -900,11 +899,15 @@ print(f"El tiempo máximo de verificación, en minutos, fue de: {data_plot['TIEM
 
 print()
 print()
-
+print("Fecha y hora de los últimos registros del procesamiento: \n")
+print()
 
 print(digit_stop(data_plot))
 
 print()
+print()
+
+print("Estimación de tiempos de finalización del Simulacro: \n")
 print()
 
 print(proyeccion_tiempos(data_plot, info, hora_inicio, fecha_corte))
@@ -912,8 +915,15 @@ print(proyeccion_tiempos(data_plot, info, hora_inicio, fecha_corte))
 print()
 print()
 
+print("Número mínimo de equipos necesarios: \n")
+print()
 print(equipos_necesarios(data_plot, 4, 0.9))
 
+print()
+print()
+
+print("Porcentaje de actas contabilizadas capturadas: \n")
+print()
 tiempos_finales(data_plot, tipo_eleccion)
 
 #save_csv(data_plot)
