@@ -13,9 +13,9 @@ tipo_eleccion = str(input("Indique el tipo de elección: 'GUB', 'DIP_LOC' o 'AYU
 
 if simulacro == '1':
 
-    #folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_1' #Desktop
+    folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_1' #Desktop
 
-    folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_1' # Laptop
+    #folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_1' # Laptop
 
     inicio_intervalo = pd.to_datetime('2024-05-12 10:00')
 
@@ -27,9 +27,9 @@ if simulacro == '1':
 
 elif simulacro == '1.2':
 
-    #folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_1_rep'
+    folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_1_rep'
 
-    folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_1_rep' # Laptop
+    #folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_1_rep' # Laptop
 
     inicio_intervalo = pd.to_datetime('2024-05-17 20:00')
 
@@ -41,9 +41,9 @@ elif simulacro == '1.2':
 
 elif simulacro == '2':
 
-    #folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_2'
+    folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_2'
 
-    folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_2' # Laptop
+    #folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_2' # Laptop
 
     inicio_intervalo = pd.to_datetime('2024-05-19 17:00')
 
@@ -56,9 +56,9 @@ elif simulacro == '2':
 
 else:
 
-    #folder_path = 'C:\Users\Francisco Valerio\Desktop\INE\Simulacros\simulacros_prep\BDD_Simulacro_3'  #Desktop
+    folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_3'  #Desktop
 
-    folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_3' # Laptop
+    #folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_3' # Laptop
 
     inicio_intervalo = pd.to_datetime('2024-05-26 16:20')
 
@@ -224,6 +224,18 @@ titulo_elecciones = {'GUB': 'Gubernatura',
                      'AYUN': 'Ayuntamientos'}
 
 def generar_titulo(tipo):
+    """
+    Genera el título para un documento del Instituto Electoral del Estado de Puebla
+    relacionado con el Proceso Electoral 2023-2024.
+
+    Args:
+        tipo (str): El tipo de elección para la cual se generará el título. Debe corresponder
+                    a una clave en el diccionario 'titulo_elecciones'.
+
+    Returns:
+        str: El título completo que incluye el nombre del instituto, el proceso electoral,
+             el simulacro y el nombre de la elección correspondiente al tipo proporcionado.
+    """
 
     primera = "Instituto Electoral del Estado de Puebla - Proceso Electoral 2023-2024 "
 
@@ -248,6 +260,21 @@ def save_csv(df):
     # saved_file = df.to_csv(f'C:/Users/franz/Desktop/simulacros_prep/Data_clean/data_clean_{tipo_eleccion}_laptop.csv') # Laptop
 
 def digit_stop(df):
+    """
+    Imprime las últimas fechas y horas registradas de acopio, captura y verificación
+    en un DataFrame dado.
+
+    Args:
+        df (pandas.DataFrame): DataFrame que contiene las columnas 'FECHA_HORA_ACOPIO',
+                               'FECHA_HORA_CAPTURA' y 'FECHA_HORA_VERIFICACION' con 
+                               las respectivas fechas y horas.
+
+    Returns:
+        None
+
+    Prints:
+        La última fecha y hora de acopio, captura y verificación registradas en el DataFrame.
+    """
 
     last_time_acopio = df['FECHA_HORA_ACOPIO'].max()
 
@@ -260,7 +287,23 @@ def digit_stop(df):
     print(f"La última fecha y hora de verificación registrada fue a las {last_time_verificacion}")
 
 def acopio_serie_tiempo(df):
+    """
+    Genera y muestra una serie temporal y un histograma del flujo de acopio de actas
+    de escrutinio y cómputo, utilizando datos de un DataFrame dado.
 
+    Args:
+        df (pandas.DataFrame): DataFrame que contiene la columna 'FECHA_HORA_ACOPIO' con
+                               las fechas y horas del acopio de actas, y 'CODIGO_INTEGRIDAD'
+                               que representa el número de actas procesadas.
+
+    Returns:
+        None
+
+    Generates:
+        Una gráfica de líneas que muestra la evolución temporal del acopio de actas, y
+        un histograma que muestra la distribución del flujo de acopio de actas.
+    """
+    
     df['Fecha_Acopio'] = df['FECHA_HORA_ACOPIO']
 
     df.set_index('Fecha_Acopio', inplace = True)
@@ -311,6 +354,23 @@ def acopio_serie_tiempo(df):
     #fig_hist.show()
 
 def captura_serie_tiempo(df):
+    """
+      Genera y muestra una serie temporal y un histograma del flujo de captura de actas
+    de escrutinio y cómputo, utilizando datos de un DataFrame dado.
+
+    Args:
+        df (pandas.DataFrame): DataFrame que contiene la columna 'FECHA_HORA_CAPTURA' con
+                               las fechas y horas de la captura de actas, y 'CODIGO_INTEGRIDAD'
+                               que representa el número de actas procesadas.
+
+    Returns:
+        None
+
+    Generates:
+        Una gráfica de líneas que muestra la evolución temporal de la captura de actas, y
+        un histograma que muestra la distribución del flujo de captura de actas.
+
+    """
 
     df['Fecha_Captura'] = df['FECHA_HORA_CAPTURA']
 
@@ -361,6 +421,22 @@ def captura_serie_tiempo(df):
     #fig_hist.show()
 
 def verificacion_serie_tiempo(df):
+    """
+    Genera y muestra una serie temporal y un histograma del flujo de verificación de actas
+    de escrutinio y cómputo, utilizando datos de un DataFrame dado.
+
+    Args:
+        df (pandas.DataFrame): DataFrame que contiene la columna 'FECHA_HORA_VERIFICACION' con
+                               las fechas y horas de la verificación de actas, y 'CODIGO_INTEGRIDAD'
+                               que representa el número de actas procesadas.
+
+    Returns:
+        None
+
+    Generates:
+        Una gráfica de líneas que muestra la evolución temporal de la verificación de actas, y
+        un histograma que muestra la distribución del flujo de verificación de actas.
+    """
 
     df['Fecha_Verificacion'] = df['FECHA_HORA_VERIFICACION']
 
@@ -411,6 +487,29 @@ def verificacion_serie_tiempo(df):
     #fig_hist.show()
 
 def analisis_serie_capturas(df, start, stop):
+    """
+    Realiza un análisis de la serie temporal de capturas de actas de escrutinio y cómputo 
+    dentro de un intervalo de tiempo especificado, y genera una gráfica de líneas que 
+    muestra el número de capturas por hora en el DataFrame dado.
+
+    Args:
+        df (pandas.DataFrame): DataFrame que contiene las columnas 'FECHA_HORA_ACOPIO',
+                               'FECHA_HORA_CAPTURA' y 'FECHA_HORA_VERIFICACION' con 
+                               las respectivas fechas y horas, y 'CODIGO_INTEGRIDAD' 
+                               que representa el número de actas procesadas.
+        start (datetime): Fecha y hora de inicio del intervalo.
+        stop (datetime): Fecha y hora de fin del intervalo.
+
+    Returns:
+        None
+
+    Generates:
+        Imprime el número de capturas en el intervalo especificado, calcula el tiempo 
+        entre acopio y captura y entre captura y verificación, y muestra una gráfica de 
+        líneas con el número de capturas por hora y líneas verticales que indican el 
+        inicio y fin del intervalo.
+
+    """
 
     capturas_intervalo = df[(df['FECHA_HORA_CAPTURA'] >= start) & (df['FECHA_HORA_CAPTURA'] <= stop)]
 
@@ -466,6 +565,28 @@ def analisis_serie_capturas(df, start, stop):
     fig.show()
 
 def analisis_serie_verificaciones(df, start, stop):
+    """
+    Realiza un análisis de la serie temporal de verificaciones de actas de escrutinio y cómputo
+    dentro de un intervalo de tiempo especificado, y genera una gráfica de líneas que 
+    muestra el número de verificaciones por hora en el DataFrame dado.
+
+    Args:
+        df (pandas.DataFrame): DataFrame que contiene las columnas 'FECHA_HORA_ACOPIO',
+                               'FECHA_HORA_CAPTURA' y 'FECHA_HORA_VERIFICACION' con 
+                               las respectivas fechas y horas, y 'CODIGO_INTEGRIDAD' 
+                               que representa el número de actas procesadas.
+        start (datetime): Fecha y hora de inicio del intervalo.
+        stop (datetime): Fecha y hora de fin del intervalo.
+
+    Returns:
+        None
+
+    Generates:
+        Imprime el número de verificaciones en el intervalo especificado, calcula el tiempo 
+        entre acopio y captura y entre captura y verificación, y muestra una gráfica de 
+        líneas con el número de verificaciones por hora y líneas verticales que indican el 
+        inicio y fin del intervalo.
+    """
 
     verificaciones_intervalo = df[(df['FECHA_HORA_VERIFICACION'] >= start) & (df['FECHA_HORA_VERIFICACION'] <= stop)]
 
@@ -521,6 +642,22 @@ def analisis_serie_verificaciones(df, start, stop):
 
 
 def tiempos_finales(df, tipo_eleccion):
+    """
+    Calcula y muestra el momento en que se alcanzó el 100% de capturas de actas de escrutinio y cómputo
+    para un tipo de elección dado, junto con la cantidad y el porcentaje actual de actas capturadas.
+
+    Args:
+        df (pandas.DataFrame): DataFrame que contiene las columnas 'FECHA_HORA_CAPTURA' con las fechas y horas
+                               de la captura de actas, y 'CONTABILIZADA' que indica si el acta fue contabilizada.
+        tipo_eleccion (str): Tipo de elección ('GUB', 'DIP_LOC', 'AYUN') para la cual se realizará el análisis.
+
+    Returns:
+        None
+
+    Prints:
+        El momento en el que se alcanzó el 100% de actas capturadas, la cantidad actual de actas capturadas,
+        y el porcentaje actual de actas capturadas.
+    """
 
     df = df[df['CONTABILIZADA'] != 2] 
 
@@ -561,6 +698,24 @@ def tiempos_finales(df, tipo_eleccion):
     print(f"El porcentaje actual de actas capturadas es: {porcentaje_real:.2f}%")
 
 def proyeccion_tiempos(df, info, start, stop):
+    """
+    Calcula y proyecta la fecha y hora estimada para terminar de procesar el 100% de las actas
+    de escrutinio y cómputo, basado en el tiempo de procesamiento promedio observado y el intervalo de tiempo dado.
+
+    Args:
+        df (pandas.DataFrame): DataFrame que contiene la columna 'TIEMPO_PROCESAMIENTO_MINUTOS' con 
+                               los tiempos de procesamiento de actas en minutos.
+        info (dict): Diccionario que contiene la información de las actas capturadas con la clave 'ACTAS_CAPTURADAS'.
+        start (datetime): Fecha y hora de inicio del intervalo.
+        stop (datetime): Fecha y hora de fin del intervalo.
+
+    Returns:
+        None
+
+    Prints:
+        La fecha y hora estimada para terminar de procesar el 100% de las actas al ritmo observado en el intervalo.
+
+    """
 
     diff_tiempo = stop - start
 
@@ -581,7 +736,27 @@ def proyeccion_tiempos(df, info, start, stop):
     print(f"La fecha estimada para terminar de procesar el 100% de las actas de {titulo_elecciones.get(tipo_eleccion)} al ritmo llevado en el simulacro sería: {hora_estimada_finalizacion}")
 
 def equipos_necesarios(df, horas_disponibles = 4, porcentaje_actas = 1.0):
+    """
+    Calcula y muestra el número mínimo de equipos necesarios para procesar un porcentaje especificado
+    de actas de escrutinio y cómputo en el tiempo disponible dado.
 
+    Args:
+        df (pandas.DataFrame): DataFrame que contiene la columna 'TIEMPO_PROCESAMIENTO_MINUTOS' con 
+                               los tiempos de procesamiento de actas en minutos.
+        horas_disponibles (int, optional): Número de horas disponibles para procesar las actas. 
+                                           Por defecto es 4.
+        porcentaje_actas (float, optional): Porcentaje de actas que se desea procesar. 
+                                            Por defecto es 1.0 (100%).
+
+    Returns:
+        None
+
+    Prints:
+        El número mínimo de equipos necesarios para procesar el porcentaje especificado de actas 
+        en el tiempo disponible dado.
+
+    """
+    
     tiempo_prom_por_acta = df['TIEMPO_PROCESAMIENTO_MINUTOS'].mean().round(2)
 
     actas_a_procesar = totales.get(tipo_eleccion) * porcentaje_actas
@@ -595,6 +770,24 @@ def equipos_necesarios(df, horas_disponibles = 4, porcentaje_actas = 1.0):
     return print(f"El número mínimo de equipos necesarios para procesar el {porcentaje_actas*100}% de las actas de {titulo_elecciones.get(tipo_eleccion)} en {horas_disponibles} horas es de {int(equipos_necesarios)} equipos.")
 
 def group_plots(df):
+    """
+    Genera y muestra varias gráficas basadas en los datos de un DataFrame dado,
+    incluyendo el tiempo promedio de procesamiento y la cantidad de actas por 
+    diferentes categorías (observaciones, método de digitalización, origen, y contabilización).
+
+    Args:
+        df (pandas.DataFrame): DataFrame que contiene las siguientes columnas:
+                               'TIEMPO_PROCESAMIENTO_MINUTOS', 'OBSERVACIONES', 'DIGITALIZACION', 
+                               'ORIGEN', y 'CONTABILIZADA'.
+
+    Returns:
+        None
+
+    Generates:
+        Varias gráficas de barras y una gráfica de cajas que muestran el tiempo promedio de procesamiento
+        y la cantidad de actas por diferentes categorías, incluyendo observaciones, métodos de digitalización, 
+        origen, y contabilización.
+    """
 
     group_obs = df.groupby('OBSERVACIONES', as_index=False)['TIEMPO_PROCESAMIENTO_MINUTOS'].mean().round(2)
 
