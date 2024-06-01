@@ -60,9 +60,9 @@ else:
 
     #folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD_Simulacro_3' # Laptop
 
-    inicio_intervalo = pd.to_datetime('2024-05-26 16:20')
+    inicio_intervalo = pd.to_datetime('2024-05-26 14:00')
 
-    fin_intervalo = pd.to_datetime('2024-05-26 17:00')
+    fin_intervalo = pd.to_datetime('2024-05-26 14:40')
 
     hora_inicio = datetime(2024, 5, 26, 10, 20)
 
@@ -239,7 +239,7 @@ def generar_titulo(tipo):
 
     primera = "Instituto Electoral del Estado de Puebla - Proceso Electoral 2023-2024 "
 
-    segunda = "(Segundo Simulacro PREP 19 de mayo del 2024) - "
+    segunda = "(Tercer Simulacro PREP 26 de mayo del 2024) - "
 
     nombre_eleccion = titulo_elecciones.get(tipo, 'Tipo de elección desconocido')
 
@@ -255,7 +255,7 @@ def save_csv(df):
     Returns:
     saved_file (.CSV): archivo CSV"""
 
-    saved_file = df.to_csv(f'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/Data_final/data_sim_2_{tipo_eleccion}.csv', index = False) # Desktop
+    saved_file = df.to_csv(f'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/Data_final/BDD_Simulacro_3/data_sim_3_{tipo_eleccion}.csv', index = False) # Desktop
 
     # saved_file = df.to_csv(f'C:/Users/franz/Desktop/simulacros_prep/Data_clean/data_clean_{tipo_eleccion}_laptop.csv') # Laptop
 
@@ -639,7 +639,6 @@ def analisis_serie_verificaciones(df, start, stop):
     fig.add_vline(x=stop, line=dict(color='red', dash='dash'), name='Fin del intervalo')
 
     fig.show()
-
 
 def tiempos_finales(df, tipo_eleccion):
     """

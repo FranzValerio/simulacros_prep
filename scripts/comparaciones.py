@@ -13,9 +13,11 @@ folder_path_sim1_2 = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacr
 
 folder_path_sim2 = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/Data_final/BDD_Simulacro_2'
 
-totales = {'GUB': 8338,
-           'DIP_LOC': 8414,
-           'AYUN': 8356}
+folder_path_sim3 = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/Data_final/BDD_Simulacro_3'
+
+totales = {'GUB': 8334,
+           'DIP_LOC': 8423,
+           'AYUN': 8352}
 
 def find_csv(folder_path, identifier):
     """Busca archivos CSV en la carpeta especificada y que coincide
@@ -110,11 +112,15 @@ csv_file_path_1_2 = find_csv(folder_path_sim1_2, tipo_eleccion)
 
 csv_file_path_2 = find_csv(folder_path_sim2, tipo_eleccion)
 
+csv_file_path_3 = find_csv(folder_path_sim3, tipo_eleccion)
+
 df_sim_1 = load_csv(csv_file_path_1)
 
 df_sim_1_2 = load_csv(csv_file_path_1_2)
 
 df_sim_2 = load_csv(csv_file_path_2)
+
+df_sim_3 = load_csv(csv_file_path_3)
 
 df_clean_sim_1 = check_nans(df_sim_1)
 
@@ -122,12 +128,17 @@ df_clean_sim_1_2 = check_nans(df_sim_1_2)
 
 df_clean_sim_2 = check_nans(df_sim_2)
 
+df_clean_sim_3 = check_nans(df_sim_3)
+
 print(comparar_promedios(df_clean_sim_1, df_clean_sim_1_2, "Simulacro 1", "Simulacro 1.2"))
 print(comparar_promedios(df_clean_sim_1_2, df_clean_sim_2, "Simulacro 1.2", "Simulacro 2"))
+print(comparar_promedios(df_clean_sim_2, df_clean_sim_3, "Simulacro 2", "Simulacro 3"))
 
 print(calcular_incremento_actas(df_clean_sim_1, df_clean_sim_1_2, "Simulacro 1", "Simulacro 1.2", tipo_eleccion))
 print(calcular_incremento_actas(df_clean_sim_1_2, df_clean_sim_2, "Simulacro 1.2", "Simulacro 2", tipo_eleccion))
+print(calcular_incremento_actas(df_clean_sim_2, df_clean_sim_3, "Simulacro 2", "Simulacro 3", tipo_eleccion))
 
 print(f"La cantidad de actas capturadas en el Primer Simulacro PREP fue de: {df_clean_sim_1.shape[0]} actas")
 print(f"La cantidad de actas capturadas en la Repetición del Primer Simulacro PREP fue de: {df_clean_sim_1_2.shape[0]} actas")
 print(f"La cantidad de actas capturadas en el Segundo Simulacro PREP fue de: {df_clean_sim_2.shape[0]} actas")
+print(f"La cantidad de actas capturadas en el Tercer Simulacro PREP fue de: {df_clean_sim_3.shape[0]} actas")
