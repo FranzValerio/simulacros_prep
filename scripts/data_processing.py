@@ -7,7 +7,14 @@ import sys
 from datetime import datetime, timedelta
 import plotly.graph_objects as go
 
-simulacro = str(input("¿Qué simulacro desea analizar?: "))
+sim_or_prep = str(input("¿Qué desea analizar? ¿Simulacros o el PREP?: ")).lower()
+
+simulacro = None
+
+if sim_or_prep == 'simulacros' or sim_or_prep == 'sim':
+
+    simulacro = str(input("¿Qué simulacro desea analizar?: "))
+
 
 tipo_eleccion = str(input("Indique el tipo de elección: 'GUB', 'DIP_LOC' o 'AYUN': ")).upper()
 
@@ -54,7 +61,7 @@ elif simulacro == '2':
     fecha_corte = datetime(2024, 5, 19, 21, 00)
 
 
-else:
+elif simulacro == '3':
 
     folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_3'  #Desktop
 
@@ -67,6 +74,20 @@ else:
     hora_inicio = datetime(2024, 5, 26, 10, 20)
 
     fecha_corte = datetime(2024, 5, 26, 16,40)
+
+else: 
+
+    folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD' # Laptop
+
+    #folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD'  #Desktop
+
+    inicio_intervalo = pd.to_datetime('2024-06-03 00:20')
+
+    fin_intervalo = pd.to_datetime('2024-06-03 01:00')
+
+    hora_inicio = datetime(2024, 6, 2, 20, 00)
+
+    fecha_corte = datetime(2024, 6, 3, 20, 00)
 
 
 totales = {'GUB': 8334,
@@ -115,17 +136,23 @@ def load_csv(file_path):
 
             lines = file.readlines()
 
-        info_rows = lines[4:5]
+        if len(lines) > 5:
 
-        column_names = lines[3].strip().split(',')
+            info_rows = lines[4:5]
 
-        data_info_rows = [line.strip().split(',') for line in info_rows]
+            column_names = lines[3].strip().split(',')
 
-        info = pd.DataFrame(data_info_rows, columns=column_names)
+            second_line = lines[1].strip().split(',')
 
-        df = pd.read_csv(file_path, skiprows = 5, low_memory=False)
+            data_info_rows = [line.strip().split(',') for line in info_rows]
 
-        return df, info
+            info = pd.DataFrame(data_info_rows, columns=column_names)
+
+            info.insert(0, 'Fecha_corte', second_line[0])
+
+            df = pd.read_csv(file_path, skiprows = 5, low_memory=False)
+
+            return df, info
     
     else:
 
@@ -223,7 +250,7 @@ titulo_elecciones = {'GUB': 'Gubernatura',
                      'DIP_LOC': 'Diputaciones Locales',
                      'AYUN': 'Ayuntamientos'}
 
-def generar_titulo(tipo):
+def generar_titulo(sim_or_prep, tipo):
     """
     Genera el título para un documento del Instituto Electoral del Estado de Puebla
     relacionado con el Proceso Electoral 2023-2024.
@@ -237,13 +264,25 @@ def generar_titulo(tipo):
              el simulacro y el nombre de la elección correspondiente al tipo proporcionado.
     """
 
-    primera = "Instituto Electoral del Estado de Puebla - Proceso Electoral 2023-2024 "
+    if sim_or_prep == 'simulacro' or sim_or_prep == 'sim':
 
-    segunda = "(Tercer Simulacro PREP 26 de mayo del 2024) - "
+        primera = "Instituto Electoral del Estado de Puebla - Proceso Electoral 2023-2024 "
 
-    nombre_eleccion = titulo_elecciones.get(tipo, 'Tipo de elección desconocido')
+        segunda = "(Tercer Simulacro PREP 26 de mayo del 2024) - "
 
-    return primera + segunda + nombre_eleccion 
+        nombre_eleccion = titulo_elecciones.get(tipo, 'Tipo de elección desconocido')
+
+        return primera + segunda + nombre_eleccion 
+    
+    else:
+
+        primera = "Instituto Electoral del Estado de Puebla - "
+
+        segunda = "Programa de Resultados Electorales Preliminares (2 de junio de 2024) - "
+
+        nombre_eleccion = titulo_elecciones.get(tipo, "Tipo de elección desconocido")
+
+        return primera + segunda + nombre_eleccion
 
 def save_csv(df):
     """
@@ -320,7 +359,7 @@ def acopio_serie_tiempo(df):
     
     fig_line.update_layout(
         title={
-        'text': f"{generar_titulo(tipo_eleccion)}<br>Evolución temporal del Acopio de Actas de Escrutinio y Cómputo</br>",
+        'text': f"{generar_titulo(sim_or_prep, tipo_eleccion)}<br>Evolución temporal del Acopio de Actas de Escrutinio y Cómputo</br>",
         'font': {'size': 20}  # Aumentar el tamaño del título
     },
     xaxis_title='Fecha y Hora',
@@ -343,7 +382,7 @@ def acopio_serie_tiempo(df):
 
     fig_hist = px.histogram(df.reset_index(), x = 'Fecha_Acopio', 
                             nbins = 20, 
-                            title = f"{generar_titulo(tipo_eleccion)}<br>Histograma del Flujo de Acopio de Actas de Escrutinio y Cómputo</br>",
+                            title = f"{generar_titulo(sim_or_prep, tipo_eleccion)}<br>Histograma del Flujo de Acopio de Actas de Escrutinio y Cómputo</br>",
                             color_discrete_sequence=[hist_color])
     
     fig_hist.update_layout(
@@ -387,7 +426,7 @@ def captura_serie_tiempo(df):
                        mode = 'lines+markers', name='Actas Capturadas', line = dict(color = line_color)))
     fig_line.update_layout(
         title={
-        'text': f"{generar_titulo(tipo_eleccion)}<br>Evolución temporal de la Captura de Actas de Escrutinio y Cómputo</br>",
+        'text': f"{generar_titulo(sim_or_prep,tipo_eleccion)}<br>Evolución temporal de la Captura de Actas de Escrutinio y Cómputo</br>",
         'font': {'size': 20}  # Aumentar el tamaño del título
     },
     xaxis_title='Fecha y Hora',
@@ -410,7 +449,7 @@ def captura_serie_tiempo(df):
 
     fig_hist = px.histogram(df.reset_index(), x = 'Fecha_Captura', 
                             nbins = 20, 
-                            title = f"{generar_titulo(tipo_eleccion)}<br>Histograma del Flujo de Captura de Actas de Escrutinio y Cómputo</br>",
+                            title = f"{generar_titulo(sim_or_prep, tipo_eleccion)}<br>Histograma del Flujo de Captura de Actas de Escrutinio y Cómputo</br>",
                             color_discrete_sequence=[hist_color])
     
     fig_hist.update_layout(
@@ -453,7 +492,7 @@ def verificacion_serie_tiempo(df):
                        mode = 'lines+markers', name='Actas Verificadas', line = dict(color = line_color)))
     fig_line.update_layout(
        title={
-        'text': f"{generar_titulo(tipo_eleccion)}<br>Evolución temporal de la Verificación de Actas de Escrutinio y Cómputo</br>",
+        'text': f"{generar_titulo(sim_or_prep, tipo_eleccion)}<br>Evolución temporal de la Verificación de Actas de Escrutinio y Cómputo</br>",
         'font': {'size': 20}  # Aumentar el tamaño del título
     },
     xaxis_title='Fecha y Hora',
@@ -476,7 +515,7 @@ def verificacion_serie_tiempo(df):
 
     fig_hist = px.histogram(df.reset_index(), x = 'Fecha_Verificacion', 
                             nbins = 20, 
-                            title = f"{generar_titulo(tipo_eleccion)}<br>Histograma del Flujo de Verificacion de Actas de Escrutinio y Cómputo</br>",
+                            title = f"{generar_titulo(sim_or_prep, tipo_eleccion)}<br>Histograma del Flujo de Verificacion de Actas de Escrutinio y Cómputo</br>",
                             color_discrete_sequence=[hist_color])
     
     fig_hist.update_layout(
@@ -485,6 +524,61 @@ def verificacion_serie_tiempo(df):
         template='plotly_white'
     )
     #fig_hist.show()
+
+def analisis_serie_acopio(df, start, stop):
+
+    acopio_intervalo = df[(df['FECHA_HORA_ACOPIO'] >= start) & (df['FECHA_HORA_ACOPIO'] <= stop)]
+
+    num_acopio_intervalo = acopio_intervalo.shape[0]
+
+    print(f"El número de capturas en el intervalo de {start} a {stop} es de: {num_acopio_intervalo}")
+
+    acopio_intervalo['Tiempo_Acopio_Captura'] = (acopio_intervalo['FECHA_HORA_CAPTURA'] - acopio_intervalo['FECHA_HORA_ACOPIO']).dt.total_seconds()
+
+    acopio_intervalo['Tiempo_Captura_Verificacion'] = (acopio_intervalo['FECHA_HORA_VERIFICACION'] - acopio_intervalo['FECHA_HORA_CAPTURA']).dt.total_seconds()
+
+    print()
+    print()
+
+    #print(capturas_intervalo[['Tiempo_Acopio_Captura', 'Tiempo_Captura_Verificacion']].describe())
+
+    df['HORA_ACOPIO'] = df['FECHA_HORA_ACOPIO'].dt.floor('T')
+
+    conteo_acopio = df.groupby('HORA_ACOPIO').size()
+
+    line_color = '#2E91E5'
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(x = conteo_acopio.index, y = conteo_acopio.values,
+                             mode = 'lines+markers',
+                             name = 'Acopiadas',
+                             line=dict(color= line_color)))
+
+    
+    fig.update_layout(title={
+        'text': f"{generar_titulo(sim_or_prep, tipo_eleccion)}<br>Acopio de Actas de Escrutinio y Cómputo</br>",
+        'font': {'size': 20}  # Aumentar el tamaño del título
+    },
+    xaxis_title='Fecha y Hora',
+    yaxis_title='Número de Actas Digitalizadas',
+    xaxis=dict(
+        title_font_size=18  # Aumentar tamaño de título del eje X
+    ),
+    yaxis=dict(
+        title_font_size=18  # Aumentar tamaño de título del eje Y
+    ),
+    legend_title_text='Observaciones',
+    legend=dict(
+        font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
+        title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
+    ),
+    template='plotly_white')
+    
+    fig.add_vline(x = start, line = dict(color = 'green', dash = 'dash'), name ='Inicio del intervalo')
+    fig.add_vline(x = stop, line = dict(color = 'red', dash = 'dash'), name = 'Fin del intervalo')
+
+    fig.show()
 
 def analisis_serie_capturas(df, start, stop):
     """
@@ -541,7 +635,7 @@ def analisis_serie_capturas(df, start, stop):
 
     
     fig.update_layout(title={
-        'text': f"{generar_titulo(tipo_eleccion)}<br>Captura de Actas de Escrutinio y Cómputo</br>",
+        'text': f"{generar_titulo(sim_or_prep, tipo_eleccion)}<br>Captura de Actas de Escrutinio y Cómputo</br>",
         'font': {'size': 20}  # Aumentar el tamaño del título
     },
     xaxis_title='Fecha y Hora',
@@ -617,7 +711,7 @@ def analisis_serie_verificaciones(df, start, stop):
                              line = dict(color = line_color)))
 
     fig.update_layout(title={
-        'text': f"{generar_titulo(tipo_eleccion)}<br>Verificación de Actas de Escrutinio y Cómputo</br>",
+        'text': f"{generar_titulo(sim_or_prep, tipo_eleccion)}<br>Verificación de Actas de Escrutinio y Cómputo</br>",
         'font': {'size': 20}  # Aumentar el tamaño del título
     },
     xaxis_title='Fecha y Hora',
@@ -697,24 +791,6 @@ def tiempos_finales(df, tipo_eleccion):
     print(f"El porcentaje actual de actas capturadas es: {porcentaje_real:.2f}%")
 
 def proyeccion_tiempos(df, info, start, stop):
-    """
-    Calcula y proyecta la fecha y hora estimada para terminar de procesar el 100% de las actas
-    de escrutinio y cómputo, basado en el tiempo de procesamiento promedio observado y el intervalo de tiempo dado.
-
-    Args:
-        df (pandas.DataFrame): DataFrame que contiene la columna 'TIEMPO_PROCESAMIENTO_MINUTOS' con 
-                               los tiempos de procesamiento de actas en minutos.
-        info (dict): Diccionario que contiene la información de las actas capturadas con la clave 'ACTAS_CAPTURADAS'.
-        start (datetime): Fecha y hora de inicio del intervalo.
-        stop (datetime): Fecha y hora de fin del intervalo.
-
-    Returns:
-        None
-
-    Prints:
-        La fecha y hora estimada para terminar de procesar el 100% de las actas al ritmo observado en el intervalo.
-
-    """
 
     diff_tiempo = stop - start
 
@@ -722,17 +798,54 @@ def proyeccion_tiempos(df, info, start, stop):
 
     tiempo_procesamiento_disponible = diff_tiempo.total_seconds() / 60
 
-    actas_capturadas = info['ACTAS_CAPTURADAS']
+    actas_capturadas = int(info['ACTAS_CAPTURADAS'].values[0])
 
     tiempo_procesamiento_prom = df['TIEMPO_PROCESAMIENTO_MINUTOS'].mean().round(2)
 
-    tiempo_proyectado_total = tiempo_procesamiento_prom * total_actas
+    actas_restantes = total_actas - actas_capturadas
+    tiempo_restante_procesamiento = actas_restantes * tiempo_procesamiento_prom
 
-    tiempo_restante = (tiempo_proyectado_total - tiempo_procesamiento_disponible)/60
+    tiempo_restante = tiempo_restante_procesamiento / 60  # Convertir a horas
 
-    hora_estimada_finalizacion = start + timedelta(minutes = tiempo_restante)
+    hora_estimada_finalizacion = stop + timedelta(hours=tiempo_restante)
 
     print(f"La fecha estimada para terminar de procesar el 100% de las actas de {titulo_elecciones.get(tipo_eleccion)} al ritmo llevado en el simulacro sería: {hora_estimada_finalizacion}")
+#     """
+#     Calcula y proyecta la fecha y hora estimada para terminar de procesar el 100% de las actas
+#     de escrutinio y cómputo, basado en el tiempo de procesamiento promedio observado y el intervalo de tiempo dado.
+
+#     Args:
+#         df (pandas.DataFrame): DataFrame que contiene la columna 'TIEMPO_PROCESAMIENTO_MINUTOS' con 
+#                                los tiempos de procesamiento de actas en minutos.
+#         info (dict): Diccionario que contiene la información de las actas capturadas con la clave 'ACTAS_CAPTURADAS'.
+#         start (datetime): Fecha y hora de inicio del intervalo.
+#         stop (datetime): Fecha y hora de fin del intervalo.
+
+#     Returns:
+#         None
+
+#     Prints:
+#         La fecha y hora estimada para terminar de procesar el 100% de las actas al ritmo observado en el intervalo.
+
+#     """
+
+#     diff_tiempo = stop - start
+
+#     total_actas = totales.get(tipo_eleccion)
+
+#     tiempo_procesamiento_disponible = diff_tiempo.total_seconds() / 60
+
+#     actas_capturadas = info['ACTAS_CAPTURADAS']
+
+#     tiempo_procesamiento_prom = df['TIEMPO_PROCESAMIENTO_MINUTOS'].mean().round(2)
+
+#     tiempo_proyectado_total = tiempo_procesamiento_prom * total_actas
+
+#     tiempo_restante = (tiempo_proyectado_total - tiempo_procesamiento_disponible)/60
+
+#     hora_estimada_finalizacion = start + timedelta(minutes = tiempo_restante)
+
+#     print(f"La fecha estimada para terminar de procesar el 100% de las actas de {titulo_elecciones.get(tipo_eleccion)} al ritmo llevado en el simulacro sería: {hora_estimada_finalizacion}")
 
 def equipos_necesarios(df, horas_disponibles = 4, porcentaje_actas = 1.0):
     """
@@ -811,7 +924,7 @@ def group_plots(df):
 
 
     fig_1 = px.bar(group_obs, x = 'OBSERVACIONES', y = 'TIEMPO_PROCESAMIENTO_MINUTOS',
-             title = generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por observación </br>',
+             title = generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por observación </br>',
              labels = {'TIEMPO_PROCESAMIENTO_MINUTOS': 'Promedio de tiempo (minutos)', 'OBSERVACIONES': 'Observaciones'},
              color = 'OBSERVACIONES',
              text='TIEMPO_PROCESAMIENTO_MINUTOS',
@@ -822,7 +935,7 @@ def group_plots(df):
 
     fig_1.update_layout(
     title={
-        'text': generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por observación</br>',
+        'text': generar_titulo(sim_or_prep,tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por observación</br>',
         'font': {'size': 20}  # Aumentar el tamaño del título
     },
     legend_title_text='Observaciones',
@@ -837,7 +950,7 @@ def group_plots(df):
     fig_1.show()
 
     fig_2 = px.bar(group_metodo, x = 'DIGITALIZACION', y = 'TIEMPO_PROCESAMIENTO_MINUTOS',
-             title = generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por método de digitalización </br>',
+             title = generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por método de digitalización </br>',
              labels = {'TIEMPO_PROCESAMIENTO_MINUTOS': 'Promedio de tiempo (minutos)', 'DIGITALIZACION': 'Método'},
              color = 'DIGITALIZACION',
              text = 'TIEMPO_PROCESAMIENTO_MINUTOS',
@@ -848,7 +961,7 @@ def group_plots(df):
 
     fig_2.update_layout(
     title={
-        'text': generar_titulo(tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por método de digitalización</br>',
+        'text': generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por método de digitalización</br>',
         'font': {'size': 20}  # Aumentar el tamaño del título
     },
     legend_title_text='Digitalización',
@@ -864,13 +977,13 @@ def group_plots(df):
     fig_2.show()
 
     fig_3 = px.box(data_plot, x = 'TIEMPO_PROCESAMIENTO_MINUTOS',
-               title = generar_titulo(tipo_eleccion) + '<br>Distribución del tiempo de procesamiento de actas</br>', 
+               title = generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Distribución del tiempo de procesamiento de actas</br>', 
                labels = {'TIEMPO_PROCESAMIENTO_MINUTOS': 'Tiempo de procesamiento'},
                color_discrete_sequence=px.colors.qualitative.Prism)
 
     fig_3.update_layout(
     title = {
-        'text': generar_titulo(tipo_eleccion) + '<br>Distribución del tiempo de procesamiento de actas</br>',
+        'text': generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Distribución del tiempo de procesamiento de actas</br>',
         'font': {'size': 20}
     },
     xaxis_title='Tiempo de procesamiento (minutos)',
@@ -882,7 +995,7 @@ def group_plots(df):
     fig_3.show()
 
     fig_4 = px.bar(group_count_obs, x = 'OBSERVACIONES', y = 'count',
-                   title = generar_titulo(tipo_eleccion) + '<br>Cantidad de actas por tipo de observación </br>',
+                   title = generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Cantidad de actas por tipo de observación </br>',
              labels = {'count': 'Total de Actas', 'OBSERVACIONES': 'Observaciones'},
              color = 'OBSERVACIONES',
              text='count',
@@ -893,7 +1006,7 @@ def group_plots(df):
 
     fig_4.update_layout(
     title={
-        'text': generar_titulo(tipo_eleccion) + '<br>Cantidad de actas por tipo de observación</br>',
+        'text': generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Cantidad de actas por tipo de observación</br>',
         'font': {'size': 20}  # Aumentar el tamaño del título
     },
     legend_title_text='Observaciones',
@@ -908,7 +1021,7 @@ def group_plots(df):
     fig_4.show()
 
     fig_5 = px.bar(group_count_metodos, x = 'DIGITALIZACION', y = 'count',
-                    title = generar_titulo(tipo_eleccion) + '<br>Cantidad de actas por tipo método de digitalización </br>',
+                    title = generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Cantidad de actas por tipo método de digitalización </br>',
              labels = {'count': 'Total de Actas', 'DIGITALIZACION': 'Método'},
              color = 'DIGITALIZACION',
              text='count',
@@ -919,7 +1032,7 @@ def group_plots(df):
 
     fig_5.update_layout(
     title={
-        'text': generar_titulo(tipo_eleccion) + '<br>Cantidad de actas por tipo de método de digitalización</br>',
+        'text': generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Cantidad de actas por tipo de método de digitalización</br>',
         'font': {'size': 20}  # Aumentar el tamaño del título
     },
     legend_title_text='Digitalización',
@@ -934,7 +1047,7 @@ def group_plots(df):
     fig_5.show()
 
     fig_6 = px.bar(group_count_origen, x = 'ORIGEN', y = 'count',
-                    title = generar_titulo(tipo_eleccion) + '<br>Cantidad de actas por tipo de origen </br>',
+                    title = generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Cantidad de actas por tipo de origen </br>',
              labels = {'count': 'Total de Actas', 'ORIGEN': 'Origen'},
              color = 'ORIGEN',
              text='count',
@@ -946,7 +1059,7 @@ def group_plots(df):
 
     fig_6.update_layout(
     title={
-        'text': generar_titulo(tipo_eleccion) + '<br>Cantidad de actas por tipo de origen</br>',
+        'text': generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Cantidad de actas por tipo de origen</br>',
         'font': {'size': 20}  # Aumentar el tamaño del título
     },
     legend_title_text='Origen',
@@ -961,7 +1074,7 @@ def group_plots(df):
     fig_6.show()
 
     fig_7 = px.bar(group_count_cont, x = 'CONTABILIZADA', y = 'count',
-                    title = generar_titulo(tipo_eleccion) + '<br>Cantidad de actas contabilizadas </br>',
+                    title = generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Cantidad de actas contabilizadas </br>',
              labels = {'count': 'Total de Actas', 'CONTABILIZADA': 'Contabilizada'},
              color = 'CONTABILIZADA',
              text='count',
@@ -973,7 +1086,7 @@ def group_plots(df):
 
     fig_7.update_layout(
     title={
-        'text': generar_titulo(tipo_eleccion) + '<br>Cantidad de actas contabilizadas</br>',
+        'text': generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Cantidad de actas contabilizadas</br>',
         'font': {'size': 20}  # Aumentar el tamaño del título
     },
     legend_title_text='Contabilizada',
@@ -988,12 +1101,19 @@ def group_plots(df):
     fig_7.show()
 
 
-print(f"Simulacro {simulacro} realizado el {hora_inicio}")
-print(f"Tipo de elección: {titulo_elecciones.get(tipo_eleccion)}")
-
 csv_file_path = find_csv(folder_path, tipo_eleccion)
 
 df, info = load_csv(csv_file_path)
+
+if sim_or_prep == 'simulacro' or sim_or_prep == 'sim':
+
+    print(f"Simulacro {simulacro} realizado el {hora_inicio}")
+
+else:
+    print("Programa de Resultados Electorales Preliminares - 2 de junio de 2024")
+    print(f"Fecha de corte: {info['Fecha_corte'][0]}")
+
+print(f"Tipo de elección: {titulo_elecciones.get(tipo_eleccion)}")
 
 print()
 print()
@@ -1007,6 +1127,15 @@ if df is not None and info is not None:
 
     print("Información general de la base: \n")
     print(info)
+
+    print()
+    print()
+
+    print(f"La cantidad de Actas Registradas es de {info['ACTAS_REGISTRADAS'][0]} actas.")
+    print(f"La cantidad de Actas Fuera de Catálogo es de {info['ACTAS_FUERA_CATALOGO'][0]} actas.")
+    print(f"La cantidad de Actas Capturadas es de {info['ACTAS_CAPTURADAS'][0]} actas, lo que representa un {info['PORCENTAJE_ACTAS_CAPTURADAS'][0]}% del total de Actas Esperadas.")
+    print(f"La cantidad de Actas Contabilizadas es de {info['ACTAS_CONTABILIZADAS'][0]}, lo que representa un {info['PORCENTAJE_ACTAS_CONTABILIZADAS'][0]}%. del total de Actas Esperadas.")
+    print(f"El Porcentaje de Participación Ciudadana es del {info['PORCENTAJE_PARTICIPACION_CIUDADANA'][0]}%.")
 
 
 data_no_nan = check_nans(df)
@@ -1125,6 +1254,8 @@ acopio_serie_tiempo(data_plot)
 captura_serie_tiempo(data_plot)
 
 verificacion_serie_tiempo(data_plot)
+
+analisis_serie_acopio(data_plot, start = inicio_intervalo, stop = fin_intervalo)
 
 analisis_serie_capturas(data_plot, start = inicio_intervalo, stop = fin_intervalo)
 

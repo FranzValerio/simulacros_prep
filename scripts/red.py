@@ -32,11 +32,11 @@ df = pd.read_csv('C:/Users/franz/Desktop/simulacros_prep/Data_clean/data_clean_G
 variables_relevantes = ['CONTABILIZADA', 'ORIGEN', 'DIGITALIZACION', 'TIPO_DOCUMENTO', 'MECANISMOS_TRASLADO', 'TIEMPO_PROCESAMIENTO_MINUTOS']
 
 for col in variables_relevantes:
-    df[col] = df[col].replace('-', 'DESCONOCIDO')
+    df[col] = df[col].replace('-', '0')
 
 df = df[variables_relevantes]
 
-df = pd.get_dummies(df, columns=['ORIGEN', 'DIGITALIZACION', 'TIPO_DOCUMENTO', 'MECANISMOS_TRASLADO', 'OBSERVACIONES'])
+df = pd.get_dummies(df, columns=['ORIGEN', 'DIGITALIZACION', 'TIPO_DOCUMENTO', 'MECANISMOS_TRASLADO'])
 
 df.dropna(inplace=True)
 
