@@ -1,72 +1,61 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from statsmodels.tsa.stattools import adfuller
-from statsmodels.tsa.api import SARIMAX
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+from statsmodels.tsa.api import SARIMAX
 import plotly.graph_objects as go
-import seaborn as sns
-import matplotlib.pyplot as plt
 import warnings
 
 warnings.filterwarnings('ignore')
 
-data = pd.read_csv('C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/data_series/data_sim_3_GUB.csv')
+inicio_intervalo = pd.to_datetime('2024-06-02 20:00')
+fin_intervalo = pd.to_datetime('2024-06-03 20:00')
 
-data['FECHA_HORA_ACOPIO'] = pd.to_datetime(data['FECHA_HORA_ACOPIO'])
-data['FECHA_HORA_CAPTURA'] = pd.to_datetime(data['FECHA_HORA_CAPTURA'])
-data['FECHA_HORA_VERIFICACION'] = pd.to_datetime(data['FECHA_HORA_VERIFICACION'])
+data = pd.read_csv('C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD/PUE_GUB_2024.csv', skiprows=5, low_memory=False)
 
-inicio_intervalo = pd.to_datetime('2024-05-26 10:20')
+def serie_capturas(df):
 
-fin_intervalo = pd.to_datetime('2024-05-26 18:00')
+   df['Fecha_Captura'] = df['FECHA_HORA_CAPTURA']
 
-def analisis_serie_capturas(df, start, stop):
+   df.set_index('Fecha_Captura', inplace = True)
 
-    capturas_intervalo = df[(df['FECHA_HORA_CAPTURA'] >= start) & (df['FECHA_HORA_CAPTURA'] <= stop)]
+   df_resampled = df.resample('20T').count()
 
-    num_capturas_intervalo = capturas_intervalo.shape[0]
+   return df_resampled['FECHA_HORA_CAPTURA']
 
-    print(f"El número de capturas en el intervalo de {start} a {stop} es de: {num_capturas_intervalo}")
+def serie_plot(series):
 
-    capturas_intervalo['Tiempo_Acopio_Captura'] = (capturas_intervalo['FECHA_HORA_CAPTURA'] - capturas_intervalo['FECHA_HORA_ACOPIO']).dt.total_seconds()
+    line_color = '#B82E2E'
 
-    capturas_intervalo['Tiempo_Captura_Verificacion'] = (capturas_intervalo['FECHA_HORA_VERIFICACION'] - capturas_intervalo['FECHA_HORA_CAPTURA']).dt.total_seconds()
+    fig_line = go.Figure()
 
-    df['HORA_CAPTURA'] = df['FECHA_HORA_CAPTURA'].dt.floor('T')
-
-    conteo_capturas = df.groupby('HORA_CAPTURA').size()
-
-     # Crear la gráfica
-    line_color = '#AB63FA'
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=conteo_capturas.index, y=conteo_capturas.values,
-                             mode='lines+markers',
-                             name='Capturas',
-                             line=dict(color=line_color)))
-
-    fig.update_layout(
+    fig_line.add_trace(go.Scatter(x = series.index, y = series,
+                                  mode = 'lines', name = 'Actas Capturadas', line = dict(color = line_color)))
+    
+    fig_line.update_layout(
         title={
-            'text': "Instituto Electoral del Estado de Puebla - Proceso Electoral 2023-2024 (Segundo Simulacro PREP 19 de mayo del 2024) - Gubernatura<br>Captura de Actas de Escrutinio y Cómputo</br>",
-            'font': {'size': 20}
-        },
-        xaxis_title='Fecha y Hora',
-        yaxis_title='Número de Actas Procesadas',
-        xaxis=dict(title_font_size=18),
-        yaxis=dict(title_font_size=18),
-        legend_title_text='Observaciones',
-        legend=dict(font_size=18, title_font_size=20),
-        template='plotly_white'
+        'text': f"Programa de Resultados Electorales Preliminares (2 de junio de 2024) <br>Evolución temporal de la Captura de Actas de Escrutinio y Cómputo</br>",
+        'font': {'size': 20}  # Aumentar el tamaño del título
+    },
+    xaxis_title='Fecha y Hora',
+    yaxis_title='Número de Actas Capturadas',
+    xaxis=dict(
+        title_font_size=18  # Aumentar tamaño de título del eje X
+    ),
+    yaxis=dict(
+        title_font_size=18  # Aumentar tamaño de título del eje Y
+    ),
+    legend_title_text='Observaciones',
+    legend=dict(
+        font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
+        title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
+    ),
+    template='plotly_white'
     )
 
-    fig.add_vline(x=start, line=dict(color='green', dash='dash'), name='Inicio del intervalo')
-    fig.add_vline(x=stop, line=dict(color='red', dash='dash'), name='Fin del intervalo')
-
-    fig.show()
-
-    return conteo_capturas
-
-
+    fig_line.show()
 
 def check_stationarity(series, max_diff = 3):
     """
@@ -126,44 +115,6 @@ def check_stationarity(series, max_diff = 3):
 
     return stationary_series, diff_count
 
-# def find_sarimax_params(series):
-#     """
-#     Encuentra los mejores parámetros SARIMAX (p, d, q, P, D, Q, s) usando gráficos ACF y PACF.
-
-#     Args:
-#         series (pd.Series): Serie de tiempo estacionaria.
-
-#     Returns:
-#         dict: Diccionario con los parámetros SARIMAX.
-#     """
-
-#     # ACF y PACF para determinar p y q
-#     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
-#     plot_acf(series, ax=axes[0])
-#     plot_pacf(series, ax=axes[1])
-#     plt.show()
-
-#     p = int(input("Ingrese el valor de p (AR term): "))
-#     q = int(input("Ingrese el valor de q (MA term): "))
-
-#     # Determinar estacionalidad s
-#     s = int(input("Ingrese el valor de s (Seasonal period): "))
-
-#     # ACF y PACF para la serie diferenciada estacionalmente para determinar P y Q
-#     series_seasonal_diff = series.diff(s).dropna()
-
-#     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
-#     plot_acf(series_seasonal_diff, ax=axes[0])
-#     plot_pacf(series_seasonal_diff, ax=axes[1])
-#     plt.show()
-
-#     P = int(input("Ingrese el valor de P (Seasonal AR term): "))
-#     Q = int(input("Ingrese el valor de Q (Seasonal MA term): "))
-
-#     D = 1  # Asumimos una diferenciación estacional de 1
-
-#     return {'p': p, 'd': diff_count, 'q': q, 'P': P, 'D': D, 'Q': Q, 's': s}
-
 def find_sarimax_params(series):
     """
     Encuentra los mejores parámetros SARIMAX (p, d, q, P, D, Q, s) usando gráficos ACF y PACF.
@@ -202,9 +153,37 @@ def find_sarimax_params(series):
 
     return {'p': p, 'd': diff_count, 'q': q, 'P': P, 'D': D, 'Q': Q, 's': s}
 
-serie = analisis_serie_capturas(data, inicio_intervalo, fin_intervalo)
+def inverse_transform(predictions, original_series, diff_count):
+
+    last_original_value = original_series[-diff_count]
+
+    inverted_predictions = predictions.copy()
+
+    for i in range(diff_count, 0, -1):
+
+        inverted_predictions = inverted_predictions.cumsum() + original_series[-i]
+
+    return inverted_predictions
+
+
+data['FECHA_HORA_ACOPIO'] = pd.to_datetime(data['FECHA_HORA_ACOPIO'], format='%d/%m/%Y %H:%M:%S', errors='coerce')
+data['FECHA_HORA_CAPTURA'] = pd.to_datetime(data['FECHA_HORA_CAPTURA'], format='%d/%m/%Y %H:%M:%S', errors='coerce')
+data['FECHA_HORA_VERIFICACION'] = pd.to_datetime(data['FECHA_HORA_VERIFICACION'], format='%d/%m/%Y %H:%M:%S', errors='coerce')
+
+data['TIEMPO_PROCESAMIENTO'] = data['FECHA_HORA_CAPTURA'] - data['FECHA_HORA_ACOPIO']
+data['TIEMPO_PROCESAMIENTO_MINUTOS'] = data['TIEMPO_PROCESAMIENTO'].dt.total_seconds()/60
+data['TIEMPO_PROCESAMIENTO_MINUTOS'] = data['TIEMPO_PROCESAMIENTO_MINUTOS'].round(2)
+
+data['TIEMPO_PROCESAMIENTO_VERIFICACION'] = data['FECHA_HORA_VERIFICACION'] - data['FECHA_HORA_CAPTURA']
+data['TIEMPO_PROCESAMIENTO_VERIFICACION_MINUTOS'] = data['TIEMPO_PROCESAMIENTO_VERIFICACION'].dt.total_seconds()/60
+data['TIEMPO_PROCESAMIENTO_VERIFICACION_MINUTOS'] = data['TIEMPO_PROCESAMIENTO_VERIFICACION_MINUTOS'].round(2)
+
+serie = serie_capturas(data)
+
+serie_plot(serie)
 
 print(f"Total de datos en la serie: {len(serie)}")
+
 print()
 
 serie_estacionaria, diff_count = check_stationarity(serie)
@@ -213,7 +192,10 @@ print()
 print("La serie estacionaria es ahora: \n")
 print(serie_estacionaria.head())
 
-print()
+fig, ax = plt.subplots(1, 1, figsize = (8,6), dpi = 80)
+ax.plot(serie_estacionaria)
+plt.show()
+
 sarimax_params = find_sarimax_params(serie_estacionaria)
 
 # Ajustar el modelo SARIMAX con los parámetros encontrados
@@ -228,16 +210,17 @@ predictions = results.get_forecast(steps=forecast_steps)
 forecasted_values = predictions.predicted_mean
 confidence_intervals = predictions.conf_int()
 
-print(forecasted_values)
+inverted_forecast_values = inverse_transform(forecasted_values, serie, diff_count)
+print(inverted_forecast_values)
 print(confidence_intervals)
 
 # Plot the predictions
 fig = go.Figure()
-fig.add_trace(go.Scatter(x=serie_estacionaria.index, y=serie_estacionaria.values,
+fig.add_trace(go.Scatter(x=serie.index, y=serie.values,
                          mode='lines+markers',
                          name='Capturas',
                          line=dict(color='#AB63FA')))
-fig.add_trace(go.Scatter(x=forecasted_values.index, y=forecasted_values.values,
+fig.add_trace(go.Scatter(x=inverted_forecast_values.index, y=inverted_forecast_values.values,
                          mode='lines+markers',
                          name='Predicciones',
                          line=dict(color='orange')))
