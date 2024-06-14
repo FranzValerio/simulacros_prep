@@ -60,7 +60,6 @@ elif simulacro == '2':
 
     fecha_corte = datetime(2024, 5, 19, 21, 00)
 
-
 elif simulacro == '3':
 
     folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD_Simulacro_3'  #Desktop
@@ -77,23 +76,21 @@ elif simulacro == '3':
 
 else: 
 
-    folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD' # Laptop
+    #folder_path = 'C:/Users/franz/Desktop/simulacros_prep/BDD' # Laptop
 
-    #folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD'  #Desktop
+    folder_path = 'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/BDD'  #Desktop
 
-    inicio_intervalo = pd.to_datetime('2024-06-03 00:20')
+    inicio_intervalo = pd.to_datetime('2024-06-03 00:00')
 
-    fin_intervalo = pd.to_datetime('2024-06-03 01:00')
+    fin_intervalo = pd.to_datetime('2024-06-03 03:00')
 
     hora_inicio = datetime(2024, 6, 2, 20, 00)
 
     fecha_corte = datetime(2024, 6, 3, 20, 00)
 
-
 totales = {'GUB': 8334,
                'DIP_LOC': 8423,
                'AYUN': 8352}
-
 
 warnings.filterwarnings('ignore')
 
@@ -189,9 +186,9 @@ def change_names(df):
 
     for x in names:
 
-        if x == '-':
+        if x == ' - ':
 
-            df.OBSERVACIONES = df.OBSERVACIONES.replace('-', 'SIN OBSERVACIONES')
+            df.OBSERVACIONES = df.OBSERVACIONES.replace(' - ', 'SIN OBSERVACIONES')
 
     return df
 
@@ -355,28 +352,33 @@ def acopio_serie_tiempo(df):
     fig_line = go.Figure()
 
     fig_line.add_trace(go.Scatter(x=df_resampled.index, y = df_resampled.CODIGO_INTEGRIDAD,
-                       mode = 'lines+markers', name='Actas Acopiadas',line = dict(color = line_color)))
+                       mode = 'lines', name='Actas Acopiadas',line = dict(color = line_color)))
     
     fig_line.update_layout(
         title={
         'text': f"{generar_titulo(sim_or_prep, tipo_eleccion)}<br>Evolución temporal del Acopio de Actas de Escrutinio y Cómputo</br>",
-        'font': {'size': 20}  # Aumentar el tamaño del título
+        'font': {'size': 25}  # Aumentar el tamaño del título
     },
     xaxis_title='Fecha y Hora',
     yaxis_title='Número de Actas Procesadas',
     xaxis=dict(
-        title_font_size=18  # Aumentar tamaño de título del eje X
+        title_font_size=20  # Aumentar tamaño de título del eje X
     ),
     yaxis=dict(
-        title_font_size=18  # Aumentar tamaño de título del eje Y
+        title_font_size=20  # Aumentar tamaño de título del eje Y
     ),
     legend_title_text='Observaciones',
     legend=dict(
         font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
         title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
     ),
-    template='plotly_white'
+    template='presentation'
     )
+
+    width = 1980
+    height = 1020
+
+    fig_line.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/acopio_{tipo_eleccion}_serie_tiempo.png", format='png', width=width, height=height, scale=1)
 
     fig_line.show()
 
@@ -423,27 +425,33 @@ def captura_serie_tiempo(df):
     fig_line = go.Figure()
 
     fig_line.add_trace(go.Scatter(x=df_resampled.index, y = df_resampled.CODIGO_INTEGRIDAD,
-                       mode = 'lines+markers', name='Actas Capturadas', line = dict(color = line_color)))
+                       mode = 'lines', name='Actas Capturadas', line = dict(color = line_color)))
     fig_line.update_layout(
         title={
         'text': f"{generar_titulo(sim_or_prep,tipo_eleccion)}<br>Evolución temporal de la Captura de Actas de Escrutinio y Cómputo</br>",
-        'font': {'size': 20}  # Aumentar el tamaño del título
+        'font': {'size': 25}  # Aumentar el tamaño del título
     },
     xaxis_title='Fecha y Hora',
     yaxis_title='Número de Actas Capturadas',
     xaxis=dict(
-        title_font_size=18  # Aumentar tamaño de título del eje X
+        title_font_size=20  # Aumentar tamaño de título del eje X
     ),
     yaxis=dict(
-        title_font_size=18  # Aumentar tamaño de título del eje Y
+        title_font_size=20  # Aumentar tamaño de título del eje Y
     ),
     legend_title_text='Observaciones',
     legend=dict(
         font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
         title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
     ),
-    template='plotly_white'
+    template='presentation'
     )
+
+    width = 1920
+    height = 1080
+
+    fig_line.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/captura_{tipo_eleccion}_serie_tiempo.png", format='png', width=width, height=height, scale=1)
+
 
     fig_line.show()
 
@@ -489,27 +497,32 @@ def verificacion_serie_tiempo(df):
     fig_line = go.Figure()
 
     fig_line.add_trace(go.Scatter(x=df_resampled.index, y = df_resampled.CODIGO_INTEGRIDAD,
-                       mode = 'lines+markers', name='Actas Verificadas', line = dict(color = line_color)))
+                       mode = 'lines', name='Actas Verificadas', line = dict(color = line_color)))
     fig_line.update_layout(
        title={
         'text': f"{generar_titulo(sim_or_prep, tipo_eleccion)}<br>Evolución temporal de la Verificación de Actas de Escrutinio y Cómputo</br>",
-        'font': {'size': 20}  # Aumentar el tamaño del título
+        'font': {'size': 25}  # Aumentar el tamaño del título
     },
     xaxis_title='Fecha y Hora',
     yaxis_title='Número de Actas Verificadas',
     xaxis=dict(
-        title_font_size=18  # Aumentar tamaño de título del eje X
+        title_font_size=20  # Aumentar tamaño de título del eje X
     ),
     yaxis=dict(
-        title_font_size=18  # Aumentar tamaño de título del eje Y
+        title_font_size=20  # Aumentar tamaño de título del eje Y
     ),
     legend_title_text='Observaciones',
     legend=dict(
         font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
         title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
     ),
-    template='plotly_white'
+    template='presentation'
     )
+
+    width = 1920
+    height = 1080
+
+    fig_line.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/verificacion_{tipo_eleccion}_serie_tiempo.png", format='png', width=width, height=height, scale=1)
 
     fig_line.show()
 
@@ -551,32 +564,38 @@ def analisis_serie_acopio(df, start, stop):
     fig = go.Figure()
 
     fig.add_trace(go.Scatter(x = conteo_acopio.index, y = conteo_acopio.values,
-                             mode = 'lines+markers',
+                             mode = 'lines',
                              name = 'Acopiadas',
                              line=dict(color= line_color)))
 
     
     fig.update_layout(title={
         'text': f"{generar_titulo(sim_or_prep, tipo_eleccion)}<br>Acopio de Actas de Escrutinio y Cómputo</br>",
-        'font': {'size': 20}  # Aumentar el tamaño del título
+        'font': {'size': 25}  # Aumentar el tamaño del título
     },
     xaxis_title='Fecha y Hora',
     yaxis_title='Número de Actas Digitalizadas',
     xaxis=dict(
-        title_font_size=18  # Aumentar tamaño de título del eje X
+        title_font_size=20  # Aumentar tamaño de título del eje X
     ),
     yaxis=dict(
-        title_font_size=18  # Aumentar tamaño de título del eje Y
+        title_font_size=20  # Aumentar tamaño de título del eje Y
     ),
     legend_title_text='Observaciones',
     legend=dict(
         font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
         title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
     ),
-    template='plotly_white')
+    template='presentation')
     
     fig.add_vline(x = start, line = dict(color = 'green', dash = 'dash'), name ='Inicio del intervalo')
     fig.add_vline(x = stop, line = dict(color = 'red', dash = 'dash'), name = 'Fin del intervalo')
+
+    width = 1920  
+    height = 1080
+
+    fig.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_acopio.png", format='png', width=width, height=height, scale=1)
+
 
     fig.show()
 
@@ -629,32 +648,38 @@ def analisis_serie_capturas(df, start, stop):
     fig = go.Figure()
 
     fig.add_trace(go.Scatter(x = conteo_capturas.index, y = conteo_capturas.values,
-                             mode = 'lines+markers',
+                             mode = 'lines',
                              name = 'Capturas',
                              line=dict(color= line_color)))
 
     
     fig.update_layout(title={
         'text': f"{generar_titulo(sim_or_prep, tipo_eleccion)}<br>Captura de Actas de Escrutinio y Cómputo</br>",
-        'font': {'size': 20}  # Aumentar el tamaño del título
+        'font': {'size': 25}  # Aumentar el tamaño del título
     },
     xaxis_title='Fecha y Hora',
     yaxis_title='Número de Actas Procesadas',
     xaxis=dict(
-        title_font_size=18  # Aumentar tamaño de título del eje X
+        title_font_size=20  # Aumentar tamaño de título del eje X
     ),
     yaxis=dict(
-        title_font_size=18  # Aumentar tamaño de título del eje Y
+        title_font_size=20  # Aumentar tamaño de título del eje Y
     ),
     legend_title_text='Observaciones',
     legend=dict(
         font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
         title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
     ),
-    template='plotly_white')
+    template='presentation')
     
     fig.add_vline(x = start, line = dict(color = 'green', dash = 'dash'), name ='Inicio del intervalo')
     fig.add_vline(x = stop, line = dict(color = 'red', dash = 'dash'), name = 'Fin del intervalo')
+
+    width = 1920
+    height = 1080
+
+    fig.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_captura.png", format='png', width=width, height=height, scale=1)
+
 
     fig.show()
 
@@ -706,31 +731,37 @@ def analisis_serie_verificaciones(df, start, stop):
     fig = go.Figure()
 
     fig.add_trace(go.Scatter(x = conteo_verificaciones.index, y = conteo_verificaciones.values,
-                             mode = 'lines+markers',
+                             mode = 'lines',
                              name = 'Verificaciones',
                              line = dict(color = line_color)))
 
     fig.update_layout(title={
         'text': f"{generar_titulo(sim_or_prep, tipo_eleccion)}<br>Verificación de Actas de Escrutinio y Cómputo</br>",
-        'font': {'size': 20}  # Aumentar el tamaño del título
+        'font': {'size': 25}  # Aumentar el tamaño del título
     },
     xaxis_title='Fecha y Hora',
     yaxis_title='Número de Actas Verificadas',
     xaxis=dict(
-        title_font_size=18  # Aumentar tamaño de título del eje X
+        title_font_size=20  # Aumentar tamaño de título del eje X
     ),
     yaxis=dict(
-        title_font_size=18  # Aumentar tamaño de título del eje Y
+        title_font_size=20  # Aumentar tamaño de título del eje Y
     ),
     legend_title_text='Observaciones',
     legend=dict(
         font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
         title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
     ),
-    template='plotly_white')
+    template='presentation')
 
     fig.add_vline(x=start, line=dict(color='green', dash='dash'), name='Inicio del intervalo')
     fig.add_vline(x=stop, line=dict(color='red', dash='dash'), name='Fin del intervalo')
+
+    width = 1920
+    height = 1080
+
+    fig.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_verificacion.png", format='png', width=width, height=height, scale=1)
+
 
     fig.show()
 
@@ -905,21 +936,14 @@ def group_plots(df):
 
     group_metodo = df.groupby('DIGITALIZACION', as_index = False)['TIEMPO_PROCESAMIENTO_MINUTOS'].mean().round(2)
 
-    #group_count_obs = df['OBSERVACIONES'].value_counts().reset_index(name = 'count')
-
-    #group_count_metodos = df['DIGITALIZACION'].value_counts().reset_index(name = 'count')
-
-    #group_count_origen = df['ORIGEN'].value_counts().reset_index(name = 'count')
-
-    #group_count_cont = df['CONTABILIZADA'].value_counts().reset_index(name = 'count')
-
-
-    #group_count_doc = df['TIPO_DOCUMENTO'].value_counts().reset_index(name = 'count')
-
     group_count_obs = df['OBSERVACIONES'].value_counts().reset_index(name='count').rename(columns={'index': 'OBSERVACIONES'})
+
     group_count_metodos = df['DIGITALIZACION'].value_counts().reset_index(name='count').rename(columns={'index': 'DIGITALIZACION'})
+
     group_count_origen = df['ORIGEN'].value_counts().reset_index(name='count').rename(columns={'index': 'ORIGEN'})
+
     group_count_cont = df['CONTABILIZADA'].value_counts().reset_index(name='count').rename(columns={'index': 'CONTABILIZADA'})
+
     group_count_cont['CONTABILIZADA'] = group_count_cont['CONTABILIZADA'].replace({0: 'No contabilizada', 1: 'Contabilizada'})
 
 
@@ -936,16 +960,22 @@ def group_plots(df):
     fig_1.update_layout(
     title={
         'text': generar_titulo(sim_or_prep,tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por observación</br>',
-        'font': {'size': 20}  # Aumentar el tamaño del título
+        'font': {'size': 25}  # Aumentar el tamaño del título
     },
     legend_title_text='Observaciones',
     legend=dict(
         font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
         title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
     ),
-    xaxis_title_font_size=18,  # Aumentar tamaño de título del eje X
-    yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
+    xaxis_title_font_size=20,  # Aumentar tamaño de título del eje X
+    yaxis_title_font_size=20   # Aumentar tamaño de título del eje Y
+
+    
 )
+    width = 1920
+    height = 1080
+
+    fig_1.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_prom_obs.png", format='png', width=width, height=height, scale=1)
 
     fig_1.show()
 
@@ -962,17 +992,20 @@ def group_plots(df):
     fig_2.update_layout(
     title={
         'text': generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Tiempo promedio de procesamiento de actas por método de digitalización</br>',
-        'font': {'size': 20}  # Aumentar el tamaño del título
+        'font': {'size': 25}  # Aumentar el tamaño del título
     },
     legend_title_text='Digitalización',
     legend=dict(
         font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
         title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
     ),
-    xaxis_title_font_size=18,  # Aumentar tamaño de título del eje X
-    yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
+    xaxis_title_font_size=20,  # Aumentar tamaño de título del eje X
+    yaxis_title_font_size=20   # Aumentar tamaño de título del eje Y
 )
+    width = 1920
+    height = 1080
 
+    fig_2.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_prom_metodo.png", format='png', width=width, height=height, scale=1)
 
     fig_2.show()
 
@@ -984,14 +1017,17 @@ def group_plots(df):
     fig_3.update_layout(
     title = {
         'text': generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Distribución del tiempo de procesamiento de actas</br>',
-        'font': {'size': 20}
+        'font': {'size': 25}
     },
     xaxis_title='Tiempo de procesamiento (minutos)',
     yaxis_title='Frecuencia',
-    xaxis_title_font={'size': 16},  # Aumentar tamaño del título del eje X
-    yaxis_title_font={'size': 16}   # Aumentar tamaño del título del eje Y
+    xaxis_title_font={'size': 20},  # Aumentar tamaño del título del eje X
+    yaxis_title_font={'size': 20}   # Aumentar tamaño del título del eje Y
 )
+    width = 1920
+    height = 1080
 
+    fig_3.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_boxplot.png", format='png', width=width, height=height, scale=1)
     fig_3.show()
 
     fig_4 = px.bar(group_count_obs, x = 'OBSERVACIONES', y = 'count',
@@ -1007,17 +1043,20 @@ def group_plots(df):
     fig_4.update_layout(
     title={
         'text': generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Cantidad de actas por tipo de observación</br>',
-        'font': {'size': 20}  # Aumentar el tamaño del título
+        'font': {'size': 25}  # Aumentar el tamaño del título
     },
     legend_title_text='Observaciones',
     legend=dict(
         font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
         title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
     ),
-    xaxis_title_font_size=18,  # Aumentar tamaño de título del eje X
-    yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
+    xaxis_title_font_size=20,  # Aumentar tamaño de título del eje X
+    yaxis_title_font_size=20   # Aumentar tamaño de título del eje Y
 )
+    width = 1920
+    height = 1080
 
+    fig_4.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_obs_count.png", format='png', width=width, height=height, scale=1)
     fig_4.show()
 
     fig_5 = px.bar(group_count_metodos, x = 'DIGITALIZACION', y = 'count',
@@ -1033,17 +1072,20 @@ def group_plots(df):
     fig_5.update_layout(
     title={
         'text': generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Cantidad de actas por tipo de método de digitalización</br>',
-        'font': {'size': 20}  # Aumentar el tamaño del título
+        'font': {'size': 25}  # Aumentar el tamaño del título
     },
     legend_title_text='Digitalización',
     legend=dict(
         font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
         title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
     ),
-    xaxis_title_font_size=18,  # Aumentar tamaño de título del eje X
-    yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
+    xaxis_title_font_size=20,  # Aumentar tamaño de título del eje X
+    yaxis_title_font_size=20   # Aumentar tamaño de título del eje Y
 )
+    width = 1920
+    height = 1080
 
+    fig_5.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_count_metodo.png", format='png', width=width, height=height, scale=1)
     fig_5.show()
 
     fig_6 = px.bar(group_count_origen, x = 'ORIGEN', y = 'count',
@@ -1060,17 +1102,20 @@ def group_plots(df):
     fig_6.update_layout(
     title={
         'text': generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Cantidad de actas por tipo de origen</br>',
-        'font': {'size': 20}  # Aumentar el tamaño del título
+        'font': {'size': 25}  # Aumentar el tamaño del título
     },
     legend_title_text='Origen',
     legend=dict(
         font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
         title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
     ),
-    xaxis_title_font_size=18,  # Aumentar tamaño de título del eje X
-    yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
+    xaxis_title_font_size=20,  # Aumentar tamaño de título del eje X
+    yaxis_title_font_size=20   # Aumentar tamaño de título del eje Y
 )
+    width = 1920
+    height = 1080
 
+    fig_6.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_count_origen.png", format='png', width=width, height=height, scale=1)
     fig_6.show()
 
     fig_7 = px.bar(group_count_cont, x = 'CONTABILIZADA', y = 'count',
@@ -1087,17 +1132,20 @@ def group_plots(df):
     fig_7.update_layout(
     title={
         'text': generar_titulo(sim_or_prep, tipo_eleccion) + '<br>Cantidad de actas contabilizadas</br>',
-        'font': {'size': 20}  # Aumentar el tamaño del título
+        'font': {'size': 25}  # Aumentar el tamaño del título
     },
     legend_title_text='Contabilizada',
     legend=dict(
         font_size=18,  # Aumentar el tamaño de la fuente de la leyenda
         title_font_size=20  # Aumentar el tamaño de la fuente del título de la leyenda
     ),
-    xaxis_title_font_size=18,  # Aumentar tamaño de título del eje X
-    yaxis_title_font_size=18   # Aumentar tamaño de título del eje Y
+    xaxis_title_font_size=20,  # Aumentar tamaño de título del eje X
+    yaxis_title_font_size=20   # Aumentar tamaño de título del eje Y
 )
+    width = 1920
+    height = 1080
 
+    fig_7.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_count_contabilizadas.png", format='png', width=width, height=height, scale=1)
     fig_7.show()
 
 

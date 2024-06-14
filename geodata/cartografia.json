@@ -1,0 +1,658 @@
+
+var resaltado = { busquedas : {color: '#94A5C4' , fillColor: '#A4B5D4'} ,
+                  cprincipal : {color: '#90C0A0' , fillColor: '#A0D0B0'} ,
+                  cincidental : {color: '#0FCF9F' , fillColor: '#0FDFAF'} ,
+                  activo : {fillColor: '#A4B5D4' }  };
+var eventos_carto = { obtener_georeferencia : false };
+var index_layer;
+$( "#info-mzn" ).trigger( "click" );
+switch_georef();
+function cartografia(){
+  // La caja de busqueda se mostrara hasta que se seleccione una entidad
+  $('#search-box').hide();
+  $('#result-box').hide();
+  $('#extops-box').hide();
+
+  // Antes que Todo Le Hacemos Su Espacio al Mapa.
+  resize_carto();
+  window.addEventListener("resize", resize_carto );
+  ui.map.init();
+
+  ui.map.add_control( 'map-control-info', 'bottomleft' );
+  ui.mustache.render( 'mu-map-extend', {}, 'map-control-extend' );
+
+  var bucket = 'nacional';
+  var resource = 'wnacional';
+  var name = 'DCE';
+
+  index_layer = ui.map.add_layer( {bucket: bucket, resource: resource, name: name} );
+
+  ui.map.add_overlay( index_layer, {name: 'Entidad', layer: 'ENTIDAD'} );
+  ui.map.add_overlay( index_layer, {name: 'Distrito Federal', layer: 'DISTRITO'} );
+  ui.map.add_overlay( index_layer, {name: 'Distrito Local', layer: 'DISTRITO_LOCAL'} );
+  ui.map.add_overlay( index_layer, {name: 'Municipio', layer: 'MUNICIPIO'} );
+  ui.map.add_overlay( index_layer, {name: 'Secci\u00F3n', layer: 'SECCION'} );
+  ui.map.add_overlay( index_layer, {name: 'Localidad', layer: 'LIMITE_LOCALIDAD,LOCALIDAD'} );
+  ui.map.add_overlay( index_layer, {name: 'Manzana', layer: 'MANZANA'} );
+  ui.map.add_overlay( index_layer, {name: 'Vialidad', layer: 'VIALIDAD'} );
+  ui.map.add_overlay( index_layer, {name: 'Carretera', layer: 'CARRETERAS'} );
+  ui.map.add_overlay( index_layer, {name: 'Colonia', layer: 'COLONIA'} );
+  ui.map.add_overlay( index_layer, {name: 'R\u00EDos', layer: 'RIOS'} );
+  ui.map.add_overlay( index_layer, {name: 'Lagos', layer: 'LAGOS'} );
+  ui.map.add_overlay( index_layer, {name: 'Servicios', layer: 'SERVICIOS'} );
+  ui.map.add_overlay( index_layer, {name: 'M\u00F3dulos', layer: 'MODULO'} );
+  ui.map.add_overlay( index_layer, {name: 'Municipios indigenas/afromexicanos', layer: 'DINDIGENAS'} );
+
+  $( '#map-control-extend a' ).on( 'click', map_control_extend );
+
+  // Vamos a Poner el Listado en los Nombres de las entidades
+  for ( _e = 0 ; _e < 33 ; _e ++ ){
+    $('#carto-entidad').append($('<option>', {
+      value: _e,
+      text : ui.map.get_entidad( _e ).name
+    }));
+  }
+
+  ui.map.change_layers();
+  // Aqui ponemos la referencia de las entidades por si no hay un layer predefinido
+  ponReferencia();
+
+  carto_triggers();
+
+  // Se Ocultan Herramientas de busqueda (se Muestran Hasta que Se Selecciona una Entidad
+
+  switch (__lugar){
+    case 'mapa':
+    // Aqui vamos a activar la georeferencia por punto por default
+      // eventos_carto.obtener_georeferencia = true;
+    case 'mapas':
+      // Aqui vamos a ocultar las cajas que no se ocuparan
+
+      // como valor agregado vamos a hacer el cambio de la entidad aqui en caso de que sea diferente de 0
+      if ( (__edms.e != 'undefined') && (__edms.e > 0) )
+        $('#carto-entidad').val( __edms.e ).change();
+    break;
+    case 'vocalias':
+      // Se van a Mostrar las Cajas de Vocalias
+      // Solo hasta que solicitamos entidad debe buscar vocalias
+      // get_vocalias(1); // Esta llamada se hace hasta que tengamos una entidad Activa.
+
+    break;
+    case 'coberturas':
+      // Aqui vamos a ocultar las cajas que no se ocuparan
+      ui.map.add_control( 'map-cobertura-info', 'topright' );
+      // Iniciamos el Control Pero no lo Ponemos Por que Solo es Necesario Cuando estamos en la cobertura
+      // Ademas Podemos Poner un modal de inicio que diga: hola esto funciona asi!
+      var  modalinfo = {
+        title: 'Guia de Uso' ,
+        text: 'texto',
+        footer: 'ok',
+        show: true
+      };
+      // console.log(modalinfo);
+      // modal( modalinfo );
+
+    break;
+  }
+  // aqui vamos a obtener el tammaño del DIV del mapa
+  // esto es para el PopOver
+  $('.info-popover').popover( { toggle : "popover" , trigger : "hover" } );
+}
+function carto_triggers(){
+  $( '#carto-entidad' ).on( 'change' , cambia_entidad );
+  $( '#carto-municipio' ).on( 'change' , dibuja_municipio );
+  $( '#carto-georef-label' ).on( 'change' , switch_georef );
+
+  $( '.busqueda' ).on( 'keyup', key_validate );
+
+/*
+ *     $('#ex1').slider({
+      formatter: function(value) {
+        return 'Current value: ' + value;
+      }
+    });
+    * */
+  $('.collapse').collapse();
+}
+// Aqui Son las funciones Correspondientes al cambio de Entidad, desde aqui se haran llamadas a todos los servicios
+function cambia_entidad( e ){
+  e.preventDefault();
+  // Limpiamos Referencias
+  ui.map.clear_referent();
+  var _entidad = $(this).val();
+  console.log(_entidad);
+// redibujamos la etiqueta del control
+  if(_entidad==9){
+    $('#area-map-layers > label:nth-child(15) > span').html('Pueblos y barrios originarios');
+  }else{
+    $('#area-map-layers > label:nth-child(15) > span').html('Municipios indigenas/afromexicanos');
+  }
+// redibujamos la etiqueta del control
+
+  if ( (_entidad > 0) && (_entidad < 33) ){
+    // Mandamos a llamar el Combo de Municipios
+    var url = aajax__ + 'cartografia/ajax/get_municipio.php';
+    var parametro = { e :_entidad };
+    $.ajax( url, {cache: false, async: false, method: "POST", data: parametro } )
+      .then( function( data ){
+        if ( (data.ok) ){
+          var info = (data.municipio);
+          fill_mpio_combo("carto-municipio", info);
+          $( '#carto-municipio' ).on( 'click', dibuja_municipio );
+        }
+    } );
+
+    // Aqui Estamos Llamando al Extent de cada Entidad Para Acercarnos al ESTADO que Queriamos Consultar.
+    var _extent = ui.map.entidades[_entidad].extent;
+    _extent = ui.map.clear_extent_str(_extent);
+
+      // Aqui tenemos una condicionante, Si el evento de Acercamiento (el Zoom), es por parametros (ver vars.js.php) entonces no debo acercarme aun
+      if ( ( __edms.e != $( '#carto-entidad' ).val() ) || ( __edms.e == $( '#carto-entidad' ).val() && ( (__edms.s == 'undefined') || (__edms.s == 0) ) ) )
+          ui.map.push_extent(_extent);
+    // Aqui establecemos los Layers seleccionados (pueden no ser todos)
+    ui.map.set_layers( e );
+
+    // mostramos la caja de busqueda ! Vacia
+    carto_reset();
+
+    // Aqui Tambien Vamos a Llamar a las vocalias en su caso y a las antenas en su caso
+    switch (__lugar){
+      case 'mapas':
+      case 'mapa':
+        // en caso de que haya una busqueda previa, pos la hacemos
+        if ( __edms.e == $( '#carto-entidad' ).val() ){
+          if ( (__edms.d != 'undefined') && (__edms.d > 0) ){
+            $('#s-distrito').val( __edms.d );
+            var esthis = '#s-distrito';
+            var e = __edms.e;
+            var t = $( esthis ).data('tipo');
+            var c = $( esthis ).data('columna');
+            var l = $( esthis ).data('like');
+            var q = $( esthis ).val();
+            carto_search( e,t,c,l,q );
+          }else if ( (__edms.s != 'undefined') && (__edms.s > 0) ){
+            $('#s-seccion').val( __edms.s );
+            var esthis = '#s-seccion';
+            var e = __edms.e;
+            var t = $( esthis ).data('tipo');
+            var c = $( esthis ).data('columna');
+            var l = $( esthis ).data('like');
+            var q = $( esthis ).val();
+            carto_search( e,t,c,l,q );
+          }else  if ( (__edms.m != 'undefined') && (__edms.m > 0) ){
+            $('#carto-municipio').val( __edms.s );
+          }
+        }
+      break;
+      case 'vocalias':
+        // Se van a Mostrar las Cajas de Vocalias, Solo hasta que solicitamos entidad debe buscar vocalias
+        get_vocalias( parametro.e );
+        $('#extops-box').show();
+      break;
+      case 'coberturas':
+        // Aqui vamos a ocultar las cajas que no se ocuparan
+        get_coberturas( parametro.e );
+        $('#extops-box').show();
+      break;
+    }
+
+  }else{
+    ponReferencia();
+    ui.map.push_extent();
+    $('#search-box').hide();
+    $('#result-box').hide();
+    $('#extops-box').hide();
+  }
+}
+function switch_georef ( e ){
+  // console.log( $(e) );
+  if (  $( "input[id=info-mzn]:checked" ).val() == 'on' ){
+    eventos_carto.obtener_georeferencia = true;
+  }else{
+    eventos_carto.obtener_georeferencia = false;
+  }
+}
+function get_vocalias( _entidad ){
+  var url = aajax__ + 'cartografia/ajax/get_vocalias.php';
+  var parametro = { e :_entidad };
+  $.ajax( url, {cache: false, async: false, method: "POST", data: parametro } )
+    .then( function( data ){
+      // if (verify_ajax(data)){
+      if ( (data.ok) ){
+        var info = (data); //  get_jsonajax(data);
+        // pongo todas las trinches Vocalias con sus markers
+
+        for (var tipovocalia in info.vocalias ){
+          // tv, am, fm
+          for (var _i = 0; _i < info.vocalias[tipovocalia].length; _i++ ){
+            var v = info.vocalias[tipovocalia][ _i ];
+            if (v.punto != ''){
+              ui.map.put_marker(v);
+            }
+            console.log('se intentan poner vocalias');
+          }
+        }
+
+        ui.mustache.render( 'mu-vocalias', info , 'area-extras' );
+        // pongo un escucha que te acerque a ellas y ademas despliegue el tag con la info
+        $( '.vocalia-etiqueta' ).on( 'click', set_vocalia );
+      }
+  });
+}
+function get_coberturas( _entidad ){
+  var url = aajax__ + 'cartografia/ajax/get_antenas.php';
+  var parametro = { e :_entidad };
+  $.ajax( url, {cache: false, async: false, method: "POST", data: parametro } )
+    .then( function( data ){
+      // if (verify_ajax(data)){
+        // var info = get_jsonajax(data);
+      if ((data)){
+        var info = (data);
+        // lo pongo despues por que para este momento ya deberiamos tener el id del marker
+        ui.mustache.render( 'mu-antenas', info , 'area-extras' );
+        // pongo un escucha que traiga la cobertuda y la despliege
+        $( '.antena-etiqueta' ).on( 'click', set_antena );
+      }
+  });
+}
+//
+function dibuja_municipio(e){
+  e.preventDefault();
+  ui.map.clear_geom();
+  if ( $(this).val() != 0){
+  var geom = ui.map.add_geom( JSON.parse( $(this).val() ) );
+    ui.map.set_style( geom, resaltado.busquedas );
+    _extent = ui.map.get_geom_extent( geom );
+    ui.map.push_extent( _extent );
+  }
+  carto_reset();
+}
+
+function map_control_extend( e ){
+  //! control de extend en el mapa
+  e.preventDefault();
+  ui.map.push_extent();
+}
+
+function map_change_overlays( e ){
+  //! Cambia un overlay en el mapa.
+  var opacity = $( '#leaflet-control-opacity-range' ).val();
+  opacity = ( opacity / 100 );
+  // if( overlays.length <= 0 ){
+    if ( ( opacity < 1 ) && ( opacity >= 0 ) ) {
+      console.log( index_layer );
+      ui.map.opacityLayer( index_layer, opacity );
+
+    }
+}
+// Aqui estan las funciones sobre la georeferencia...
+function map_clickMap( o ){
+    //! obtiene el evento al click en el mapa
+  if (eventos_carto.obtener_georeferencia){
+    var e = {lat: o.latlng.lat, lng: o.latlng.lng};
+    var ent = $( '#carto-entidad' ).val();
+      // Aqui vamos a mandar la llamada de la Georreferencia.
+    var url = aajax__ + 'cartografia/ajax/get_geo.php';
+    var parametro = { lat : e.lat.toString(), lng : e.lng.toString(), t: __lugar , e : ent };
+    $.ajax( url, {cache: false, async: false, method: "POST", data: parametro } )
+      .then( function( data ){
+        console.log(data);
+        // if (verify_ajax(data)){
+        if ( (data) ){
+          // var info = get_jsonajax(data);
+          var info = (data);
+          if ( info.georeferencia.entidad > 0 && info.georeferencia.entidad < 33 )
+            info.georeferencia.nentidad = ui.get_entidad( info.georeferencia.entidad ).name;
+
+          ui.mustache.render( 'mu-geo-info', info , 'area-result-geo' );
+          // pop
+           var popinfotext = ui.mustache.get_html( 'mu-popup-geo', info );
+
+           var popupinfo = {
+            latlng : info.georeferencia.location.coordinates ,
+            text : popinfotext
+           };
+          ui.map.set_popup( popupinfo );
+
+          // esta linea pone los productos descargables
+          set_productos_pdf(info.georeferencia);
+
+          // aqui llamamos el servicio que trae los diputados
+          console.log('diputados');
+          $.ajax({
+            method:"get",
+            dataType:"json",
+            url:"/sige7/views/cartografia/ajax/get_diputados.php",
+            data: { e:info.georeferencia.entidad,df:info.georeferencia.distrito,dl:info.georeferencia.distritol }
+
+          }).done(function(msg){
+              console.log(msg);
+              var template = $('#mu-geo-diputados').html();
+              var rendereado = Mustache.render(template, msg);
+              $('#area-result-geo').append(rendereado);
+          });
+
+          // aqui llamamos el servicio que trae los diputados
+
+          $( "#area-infogeo-descarga" ).show();
+          // Aqui Vamos a Hacer Magia, si Hacen click en Un Lugar que no sea la Entidad Actual, Vamos a Cambiarnos a esa Entidad ¿que te Parece?
+          if (info.georeferencia.entidad.toString() != $( '#carto-entidad' ).val()){
+            // Cambio la entidad
+            console.log('Hubo un cambio de entidad');
+            $('#carto-entidad').val(info.georeferencia.entidad).change();
+          }
+          // solo si hubo resultado muestras la caja
+          $('#result-box').show();
+        }
+    } );
+  }
+}
+// Funcion de Busqueda
+function key_validate(e){
+  if($('#carto-entidad').val() != 0){
+    if(e.keyCode == 13){
+      var e = $( '#carto-entidad' ).val();
+      var t = $( this ).data('tipo');
+      var c = $( this ).data('columna');
+      var l = $( this ).data('like');
+      var q = $( this ).val();
+      carto_search( e,t,c,l,q );
+    }
+  }
+}
+function carto_search(e, t, c, l, q ){
+      if (l){
+        l = 1;
+      }else{
+        l = 0;
+      }
+      // escondemos la caja de busqueda
+      $('#result-box').hide();
+
+      var url = aajax__ + 'cartografia/ajax/get_busqueda.php';
+      var parametro = { e : e.toString(), q : q.toString(), t : t.toString(), c : c.toString(), l : l.toString() };
+      $.ajax( url, {cache: false, async: false, method: "POST", data: parametro } )
+        .then( function( data ){
+          // console.log(data);
+          if (verify_ajax(data)){
+            var info = get_jsonajax(data);
+            // console.log(info);
+            ui.map.clear_geom();
+            // si solo es un registro el que regresa, entonces se dibuja y se acerca a el
+            if (info.valores.length == 1){
+              var geom = ui.map.add_geom( info.valores[0].location );
+
+              ui.map.set_style( geom, resaltado.busquedas );
+              _extent = ui.map.get_geom_extent( geom );
+
+              ui.map.push_extent( _extent );
+            }else{
+              // si son mas de uno debemos ponerlo en una lista de busqueda.
+              // Agrupar.
+              for (var _c = 0 ; _c < info.valores.length ; _c++ ){
+                info.valores[_c].polygon = JSON.stringify( info.valores[_c].location );
+              }
+              ui.mustache.render( 'mu-result-search', info , 'area-result-search' );
+              $( '.resultado_boton_busqueda' ).on( 'click', set_result_search );
+
+              // solo si hay mas de 1 resultado se activa la caja de busqueda.
+              $('#area-map-layers').removeClass('in');
+              $('#detalle').removeClass('in');
+              $('#result-box').show();
+
+            }
+          }
+      } );
+}
+function set_result_search( _e ){
+
+  ui.map.clear_geom();
+  var _polygontxt =  $(this).data('polygon');
+
+  var geom = ui.map.add_geom( _polygontxt );
+
+  ui.map.set_style( geom, resaltado.busquedas );
+  var _extent = ui.map.get_geom_extent( geom );
+
+  ui.map.push_extent( _extent );
+
+}
+
+function set_antena( _e ){
+
+  // Limpiamos las geometrias anteriores
+  ui.map.clear_geom();
+  var entidad__ = $( '#carto-entidad' ).val();
+  var tipo = $(this).data('tipo');
+  var query = $(this).data('distintivo');
+  // llamamos al ajax
+  var url = aajax__ + 'cartografia/ajax/get_cobertura.php';
+  var parametro = { e : entidad__, t : tipo, q : query };
+  // console.log(parametro);
+  $.ajax( url, {cache: false, async: false, method: "POST", data: parametro } )
+    .then( function( data ){
+      if (verify_ajax(data)){
+        var info = get_jsonajax(data);
+        var viewm = info.valores[0];
+        viewm.p = [];
+        viewm.i = [];
+        for (var _c = 0 ; _c < info.valores.length ; _c++ ){
+
+          var geom = ui.map.add_geom( info.valores[ _c ].geom );
+          if ( info.valores[ _c ].cobertura == 'P' ){
+            ui.map.set_style( geom, resaltado.cprincipal );
+            viewm.p.push(geom);
+          }
+
+          if ( info.valores[ _c ].cobertura == 'I' ){
+            ui.map.set_style( geom, resaltado.cincidental );
+            viewm.i.push(geom);
+          }
+
+        }
+
+
+        // Aqui Vamos a Poner el Boton de la informacion de las Coberturas.
+        ui.mustache.render( 'mu-map-cobertura-info', viewm , 'map-cobertura-info' );
+        console.log(viewm);
+
+        var _extent = ui.map.get_geom_extent( geom );
+        // var _extent = ui.map.get_extent_geom();
+        ui.map.push_extent( _extent );
+        // Ponemos los Escuchas de los Eventos Generados por la Caja de informacion de Coberturas:
+        $( '.cobertura_boton_mapa' ).on( 'click', cobertura_actions );
+      }
+  } );
+
+}
+function set_vocalia( _e ){
+  var punto = $( this ).data('punto');
+  // console.log( _e );
+  // Obtener el Id del Punto
+  // u Lanzar el pop Up del Objeto.
+  // omap.marker_alter
+  ui.map.centrarEn( punto );
+}
+// Eventos del Mapa como click o Mouse over
+// Eventos del Mapa (Pasar mouse, dar click a poligono y ETC... ------------------
+function map_click_polygon( e, index ){
+    //! se ejecuta al evento mouseover de un poligono
+    // ui.thematic.draw_info_distrito( index );
+  console.log('diste click al poligono ' + index);
+  map_clickMap(e)
+  // console.log("LAT: " + e.latlng.lat + " LNG: " + e.latlng.lng);
+}
+function map_mouseover_polygon( e, index ){
+    //! se ejecuta al evento mouseover de un poligono
+    // if( !ui.thematic.isSelected() ){
+    //    ui.thematic.polygon_over( index );
+    // ui.thematic.draw_info_distrito( index );
+        // ui.thematic.draw_indice( index );
+    // }
+    if ( __lugar != "coberturas" ){
+      ui.map.set_style( index, resaltado.activo );
+    }
+    // console.log('Mouse over sobre:  ' + index);
+}
+function map_mouseout_polygon( e, index ){
+    //! se ejecuta al evento mouseout de un poligono
+    // if( !ui.thematic.isSelected() ){
+    //    ui.thematic.polygon_out( index );
+    //    // ** ocultamos el objeto informaci\u00F3n
+    //    $( '#map-control-distrito' ).hide();
+    // }
+    if ( __lugar != "coberturas" ){
+      ui.map.set_style( index, resaltado.busquedas );
+    }
+    // console.log('Mouse out sobre:  ' + index);
+}
+
+function ponReferencia(){
+  // ** obtenemos el dibujo de referencia solo si es necesario
+  $.ajax( ___app_url + 'res/entidades.json' , {dataType: 'json', cache: true, async: false } )
+    .then( function( data_ref ){
+      dibujaReferencia( data_ref );
+    } );
+  return;
+}
+function dibujaReferencia( data_ref ){
+  // Pintamos la referencia en el mapa
+  var array = data_ref.entidades;
+  for( var i = 0, n = array.length; i < n; i++ ){
+      var p = array[i];
+      ui.map.add_referent( p.location );                          // Si no encontramos el datos, pintamos el poligono en blanco
+  }
+}
+function carto_reset(){
+  $('#search-box').show(); $('.busqueda').val('');
+  $('#result-box').hide();
+}
+
+function set_productos_pdf( _geo ){
+
+    var mapo_productos = [
+      {acronimo: ''  },
+      {acronimo:'mrm' },
+      {acronimo:'ces' },
+      {acronimo:'ced'},
+      {acronimo:'pds'},
+      {acronimo:'cem'},
+      {acronimo:'pus'},
+      {acronimo:'psi'},
+      {acronimo:'plrad'}
+    ];
+
+
+  for (var _iv = 2; _iv < mapo_productos.length; _iv++ ){
+    var _om = mapo_productos[_iv];
+    // tenemos los datos de seccion y localidad (para el caso de los PLRAD), dentro del mismo
+    var parametro = { e : _geo.entidad , d : _geo.distrito, m : _geo.municipio , s : _geo.seccion , l : _geo.localidad , t : _om.acronimo };
+    var url = aajax__ + 'mapoteca/get_descargable.php';
+    $.ajax( url, {cache: false, async: false, method: "POST", data: parametro} )
+      .then( function( data ){
+        // if (verify_ajax(data)){
+          // var info = get_jsonajax(data);
+        if ( (data) ){
+          var info = (data);
+          if ( info.existe ){
+            ui.mustache.render( 'mu-productos-boton', info , 'area-boton-' + info.acronimo );
+          }
+        }
+      }
+    );
+  }
+}
+function resize_carto(){
+  switch (__lugar){
+    case 'mapa':
+      $("#box-row-cnt").css({
+                display: "none"
+      });
+      $("#map").css({
+                width: ( $(window).width() ),
+                height: ( $(window).height() )
+      });
+    break;
+    default:
+      $("#map").css({
+                width: $("#map").parent().width(),
+                height: ( $(window).height() - ( $("header").height() + $("footer").height() + 41) )
+      });
+      $("#box-cnt").css({
+                height: ( $(window).height() - ( $("header").height() + $("footer").height() + 41) )
+      });
+    break;
+  }
+}
+function carto_size_all(){
+
+
+  $("#map").parents().css({
+            position: 'absolute',
+            width: $(window).width(),
+            height: ( $(window).height() - ( $("header").height() + 100) )
+        });
+
+
+  $("#map").toggleClass("map-mid-area");
+  $("#map").toggleClass("map-max-area");
+// footer
+  $(window).trigger('resize');
+  ui.map.init();
+  // ui.map.resize();
+  var w2 = $("header").height();
+  console.log("perro [" + 0 + " - " + w2 + " ]" );
+}
+function cobertura_actions(e){
+  // aqui voy a hacer la llamada ajax de la cobertura info
+  var opt = $(this).data('event');
+  var geom = $(this).data('geom');
+  var siglas = $(this).data('siglas');
+  // Aqui hacemos la llamada al MODAL
+  switch(opt){
+    case 'S':
+      var parametro = { siglas : siglas };
+      var url = aajax__ + 'cartografia/ajax/get_cobertura_info.php';
+      $.ajax( url, {cache: false, async: false, method: "POST", data: parametro} )
+        .then( function( data ){
+          if (verify_ajax(data)){
+            var info = get_jsonajax(data);
+            var mdl_opt = {
+              cobertura : info,
+              antenas : true,
+              type: 'asas',
+              title: 'titulo' ,
+              text: 'texto',
+              isbutton: 'boton',
+              show: true
+            };
+            console.log(mdl_opt);
+            modal(mdl_opt);
+
+            // agregamos acciones a los popover
+            $('[data-toggle="popover"]').popover();
+          }
+        }
+      );
+    break;
+    case 'P':
+      // buscamos o recibimos los poligonos principales
+      if ( $(this).data('toogle') )
+        ui.map.set_style( geom, resaltado.cprincipal );
+      else
+        ui.map.set_style( geom, resaltado.busquedas );
+
+      $(this).data('toogle', !($(this).data('toogle')));
+    break;
+    case 'I':
+      // buscamos o recibimos los poligonos incidentales.
+      if ( $(this).data('toogle') )
+        ui.map.set_style( geom, resaltado.cincidental );
+      else
+        ui.map.set_style( geom, resaltado.busquedas );
+
+      $(this).data('toogle', !($(this).data('toogle')));
+    break;
+  }
+  // console.log(' ' + opt);
+}
