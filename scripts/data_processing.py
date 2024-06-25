@@ -291,7 +291,7 @@ def save_csv(df):
     Returns:
     saved_file (.CSV): archivo CSV"""
 
-    saved_file = df.to_csv(f'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/Data_final/BDD_Simulacro_3/data_sim_3_{tipo_eleccion}.csv', index = False) # Desktop
+    saved_file = df.to_csv(f'C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/Data_final/PREP/data_{tipo_eleccion}.csv', index = False) # Desktop
 
     # saved_file = df.to_csv(f'C:/Users/franz/Desktop/simulacros_prep/Data_clean/data_clean_{tipo_eleccion}_laptop.csv') # Laptop
 
@@ -378,7 +378,7 @@ def acopio_serie_tiempo(df):
     width = 1980
     height = 1020
 
-    fig_line.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/acopio_{tipo_eleccion}_serie_tiempo.png", format='png', width=width, height=height, scale=1)
+    fig_line.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/serie_acopio_{tipo_eleccion}.png", format='png', width=width, height=height, scale=1)
 
     fig_line.show()
 
@@ -450,7 +450,7 @@ def captura_serie_tiempo(df):
     width = 1920
     height = 1080
 
-    fig_line.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/captura_{tipo_eleccion}_serie_tiempo.png", format='png', width=width, height=height, scale=1)
+    fig_line.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/serie_captura_{tipo_eleccion}.png", format='png', width=width, height=height, scale=1)
 
 
     fig_line.show()
@@ -522,7 +522,7 @@ def verificacion_serie_tiempo(df):
     width = 1920
     height = 1080
 
-    fig_line.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/verificacion_{tipo_eleccion}_serie_tiempo.png", format='png', width=width, height=height, scale=1)
+    fig_line.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/serie_verificacion_{tipo_eleccion}.png", format='png', width=width, height=height, scale=1)
 
     fig_line.show()
 
@@ -594,7 +594,7 @@ def analisis_serie_acopio(df, start, stop):
     width = 1920  
     height = 1080
 
-    fig.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_acopio.png", format='png', width=width, height=height, scale=1)
+    #fig.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_acopio.png", format='png', width=width, height=height, scale=1)
 
 
     fig.show()
@@ -678,7 +678,7 @@ def analisis_serie_capturas(df, start, stop):
     width = 1920
     height = 1080
 
-    fig.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_captura.png", format='png', width=width, height=height, scale=1)
+    #fig.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_captura.png", format='png', width=width, height=height, scale=1)
 
 
     fig.show()
@@ -760,7 +760,7 @@ def analisis_serie_verificaciones(df, start, stop):
     width = 1920
     height = 1080
 
-    fig.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_verificacion.png", format='png', width=width, height=height, scale=1)
+    #fig.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_verificacion.png", format='png', width=width, height=height, scale=1)
 
 
     fig.show()
@@ -783,7 +783,11 @@ def tiempos_finales(df, tipo_eleccion):
         y el porcentaje actual de actas capturadas.
     """
 
-    df = df[df['CONTABILIZADA'] != 2] 
+    df_copy = df.copy()
+
+    df_copy['CONTABILIZADA'] = df_copy['CONTABILIZADA'].astype(str)
+
+    df_copy = df_copy[(df_copy['CONTABILIZADA'] != '2') | (df_copy['CONTABILIZADA'] != '-')] 
 
     df['HORA_CAPTURA'] = df['FECHA_HORA_CAPTURA'].dt.floor('T')
 
@@ -792,7 +796,6 @@ def tiempos_finales(df, tipo_eleccion):
     totales = {'GUB': 8338,
                'DIP_LOC': 8414,
                'AYUN': 8356}
-
     
     porcentaje_captura = (conteo_capturas/totales.get(tipo_eleccion)) * 100
 
@@ -819,7 +822,7 @@ def tiempos_finales(df, tipo_eleccion):
 
     print(f"La cantidad actual de actas capturadas es de: {actas_capturadas_actual} actas")
 
-    print(f"El porcentaje actual de actas capturadas es: {porcentaje_real:.2f}%")
+    print(f"El porcentaje actual de actas capturadas es: {porcentaje_real:.4f}%")
 
 def proyeccion_tiempos(df, info, start, stop):
 
@@ -932,6 +935,10 @@ def group_plots(df):
         origen, y contabilización.
     """
 
+    df['OBSERVACIONES'] = df['OBSERVACIONES'].astype(str)
+    df['DIGITALIZACION'] = df['DIGITALIZACION'].astype(str)
+    df['CONTABILIZADA'] = df['CONTABILIZADA'].astype(str)
+
     group_obs = df.groupby('OBSERVACIONES', as_index=False)['TIEMPO_PROCESAMIENTO_MINUTOS'].mean().round(2)
 
     group_metodo = df.groupby('DIGITALIZACION', as_index = False)['TIEMPO_PROCESAMIENTO_MINUTOS'].mean().round(2)
@@ -945,6 +952,7 @@ def group_plots(df):
     group_count_cont = df['CONTABILIZADA'].value_counts().reset_index(name='count').rename(columns={'index': 'CONTABILIZADA'})
 
     group_count_cont['CONTABILIZADA'] = group_count_cont['CONTABILIZADA'].replace({0: 'No contabilizada', 1: 'Contabilizada'})
+
 
 
     fig_1 = px.bar(group_obs, x = 'OBSERVACIONES', y = 'TIEMPO_PROCESAMIENTO_MINUTOS',
@@ -975,7 +983,7 @@ def group_plots(df):
     width = 1920
     height = 1080
 
-    fig_1.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_prom_obs.png", format='png', width=width, height=height, scale=1)
+    fig_1.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/tiempo_prom_obs_{tipo_eleccion}.png", format='png', width=width, height=height, scale=1)
 
     fig_1.show()
 
@@ -1005,7 +1013,7 @@ def group_plots(df):
     width = 1920
     height = 1080
 
-    fig_2.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_prom_metodo.png", format='png', width=width, height=height, scale=1)
+    fig_2.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/tiempo_prom_metodo_{tipo_eleccion}.png", format='png', width=width, height=height, scale=1)
 
     fig_2.show()
 
@@ -1027,7 +1035,7 @@ def group_plots(df):
     width = 1920
     height = 1080
 
-    fig_3.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_boxplot.png", format='png', width=width, height=height, scale=1)
+    fig_3.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/boxplot_{tipo_eleccion}.png", format='png', width=width, height=height, scale=1)
     fig_3.show()
 
     fig_4 = px.bar(group_count_obs, x = 'OBSERVACIONES', y = 'count',
@@ -1056,7 +1064,7 @@ def group_plots(df):
     width = 1920
     height = 1080
 
-    fig_4.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_obs_count.png", format='png', width=width, height=height, scale=1)
+    fig_4.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/count_obs_{tipo_eleccion}.png", format='png', width=width, height=height, scale=1)
     fig_4.show()
 
     fig_5 = px.bar(group_count_metodos, x = 'DIGITALIZACION', y = 'count',
@@ -1085,7 +1093,7 @@ def group_plots(df):
     width = 1920
     height = 1080
 
-    fig_5.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_count_metodo.png", format='png', width=width, height=height, scale=1)
+    fig_5.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/count_metodo_{tipo_eleccion}.png", format='png', width=width, height=height, scale=1)
     fig_5.show()
 
     fig_6 = px.bar(group_count_origen, x = 'ORIGEN', y = 'count',
@@ -1115,7 +1123,7 @@ def group_plots(df):
     width = 1920
     height = 1080
 
-    fig_6.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_count_origen.png", format='png', width=width, height=height, scale=1)
+    fig_6.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/count_origen_{tipo_eleccion}.png", format='png', width=width, height=height, scale=1)
     fig_6.show()
 
     fig_7 = px.bar(group_count_cont, x = 'CONTABILIZADA', y = 'count',
@@ -1145,7 +1153,7 @@ def group_plots(df):
     width = 1920
     height = 1080
 
-    fig_7.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/{tipo_eleccion}_count_contabilizadas.png", format='png', width=width, height=height, scale=1)
+    fig_7.write_image(f"C:/Users/Francisco Valerio/Desktop/INE/Simulacros/simulacros_prep/img/count_contab_{tipo_eleccion}.png", format='png', width=width, height=height, scale=1)
     fig_7.show()
 
 
@@ -1237,9 +1245,9 @@ print()
 print()
 
 
-data_plot = change_names(data_no_nan)
+#data_plot = change_names(data_no_nan)
 
-data_plot = check_negs(data_plot, 'TIEMPO_PROCESAMIENTO_MINUTOS')
+data_plot = check_negs(data_no_nan, 'TIEMPO_PROCESAMIENTO_MINUTOS')
 
 data_plot = data_plot[data_plot['CONTABILIZADA'] != 2] # REMOVE IF DOESN'T WORK
 
@@ -1297,16 +1305,16 @@ tiempos_finales(data_plot, tipo_eleccion)
 
 #save_csv(data_plot)
 
-acopio_serie_tiempo(data_plot)
+#acopio_serie_tiempo(data_plot)
 
-captura_serie_tiempo(data_plot)
+#captura_serie_tiempo(data_plot)
 
-verificacion_serie_tiempo(data_plot)
+#verificacion_serie_tiempo(data_plot)
 
-analisis_serie_acopio(data_plot, start = inicio_intervalo, stop = fin_intervalo)
+#analisis_serie_acopio(data_plot, start = inicio_intervalo, stop = fin_intervalo)
 
-analisis_serie_capturas(data_plot, start = inicio_intervalo, stop = fin_intervalo)
+#analisis_serie_capturas(data_plot, start = inicio_intervalo, stop = fin_intervalo)
 
-analisis_serie_verificaciones(data_plot, start=inicio_intervalo, stop=fin_intervalo)
+#analisis_serie_verificaciones(data_plot, start=inicio_intervalo, stop=fin_intervalo)
 
 group_plots(data_plot)
